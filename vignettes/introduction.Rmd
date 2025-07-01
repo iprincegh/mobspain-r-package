@@ -1,0 +1,40 @@
+---
+title: "Getting Started with mobspain"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Getting Started with mobspain}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup}
+library(mobspain)
+init_data_dir("~/spanish_mobility_data")
+```
+
+## Analyzing Madrid Commute Patterns
+```{r madrid_commute}
+# Get districts
+districts <- get_spatial_zones("dist") %>%
+  filter(grepl("Madrid", name))
+
+# Get morning commute data
+commute_data <- get_mobility_matrix(
+  dates = c("2023-03-01", "2023-03-07"),
+  level = "dist",
+  time_window = c(7, 9)
+) %>%
+  filter(id_origin %in% districts$id, 
+         id_destination %in% districts$id)
+
+# Calculate containment
+containment <- calculate_containment(commute_data)
+head(containment)
+
+# Visualize
+plot_daily_mobility(commute_data)
+create_flow_map(
+  commute_data %>% group_by(id_origin, id_destination) %>% summarise(n_trips = sum(n_trips)),
+  districts
+)
+```

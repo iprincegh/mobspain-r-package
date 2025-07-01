@@ -1,0 +1,91 @@
+#' Configure mobspain package settings
+#'
+#' @param cache_dir Directory for caching downloaded data (default: tempdir())
+#' @param max_cache_size Maximum cache size in MB (default: 500)
+#' @param parallel Enable parallel processing (default: FALSE)
+#' @param n_cores Number of cores for parallel processing (default: 2)
+#' @export
+configure_mobspain <- function(cache_dir = tempdir(), max_cache_size = 500, 
+                              parallel = FALSE, n_cores = 2) {
+  options(
+    mobspain.cache_dir = cache_dir,
+    mobspain.max_cache_size = max_cache_size,
+    mobspain.parallel = parallel,
+    mobspain.n_cores = n_cores
+  )
+  
+  if(parallel && !requireNamespace("parallel", quietly = TRUE)) {
+    warning("parallel package not available, disabling parallel processing")
+    options(mobspain.parallel = FALSE)
+  }
+  
+  message("mobspain configured:")
+  message("  Cache directory: ", cache_dir)
+  message("  Max cache size: ", max_cache_size, " MB")
+  message("  Parallel processing: ", ifelse(parallel, "enabled", "disabled"))
+  if(parallel) message("  Number of cores: ", n_cores)
+}
+
+#' Get package status and diagnostics
+#'
+#' @return List with package status information
+#' @export
+mobspain_status <- function() {
+  data_dir <- getOption("mobspain.data_dir")
+  cache_dir <- getOption("mobspain.cache_dir", tempdir())
+  
+  status <- list(
+    package_version = utils::packageVersion("mobspain"),
+    data_directory = data_dir,
+    data_dir_exists = !is.null(data_dir) && dir.exists(data_dir),
+    cache_directory = cache_dir,
+    cache_dir_exists = dir.exists(cache_dir),
+    spanishoddata_version = tryCatch(
+      utils::packageVersion("spanishoddata"),
+      error = function(e) "Not installed"
+    ),
+    duckdb_available = requireNamespace("duckdb", quietly = TRUE),
+    sf_available = requireNamespace("sf", quietly = TRUE),
+    parallel_enabled = getOption("mobspain.parallel", FALSE)
+  )
+  
+  # Check database status
+  if(status$data_dir_exists) {
+    db_path <- file.path(data_dir, "spanishoddata.duckdb")
+    status$database_exists <- file.exists(db_path)
+    if(status$database_exists) {
+      status$database_size_mb <- round(file.size(db_path) / 1024^2, 2)
+    }
+  }
+  
+  class(status) <- "mobspain_status"
+  return(status)
+}
+
+#' Print method for mobspain_status
+#' @param x mobspain_status object
+#' @param ... Additional arguments (ignored)
+#' @export
+print.mobspain_status <- function(x, ...) {
+  cat("mobspain Package Status\n")
+  cat("=======================\n\n")
+  
+  cat("Package version:", as.character(x$package_version), "\n")
+  cat("Data directory:", ifelse(is.null(x$data_directory), "Not set", x$data_directory), "\n")
+  cat("Data directory exists:", ifelse(x$data_dir_exists, "✓", "✗"), "\n")
+  
+  if(!is.null(x$database_exists)) {
+    cat("Database exists:", ifelse(x$database_exists, "✓", "✗"), "\n")
+    if(x$database_exists) {
+      cat("Database size:", x$database_size_mb, "MB\n")
+    }
+  }
+  
+  cat("\nDependencies:\n")
+  cat("  spanishoddata:", x$spanishoddata_version, "\n")
+  cat("  duckdb:", ifelse(x$duckdb_available, "✓", "✗"), "\n")
+  cat("  sf:", ifelse(x$sf_available, "✓", "✗"), "\n")
+  
+  cat("\nConfiguration:\n")
+  cat("  Parallel processing:", ifelse(x$parallel_enabled, "enabled", "disabled"), "\n")
+}
