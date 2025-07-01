@@ -5,6 +5,8 @@
 #' @importFrom sf st_area st_as_sf st_set_crs st_sfc st_point
 #' @importFrom ggplot2 ggplot aes geom_line labs theme_minimal
 #' @importFrom utils globalVariables
+#' @importFrom stats coef lm quantile
+#' @importFrom rlang .data
 NULL
 
 # Declare global variables to avoid R CMD check warnings

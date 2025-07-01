@@ -72,10 +72,10 @@ print.mobspain_status <- function(x, ...) {
   
   cat("Package version:", as.character(x$package_version), "\n")
   cat("Data directory:", ifelse(is.null(x$data_directory), "Not set", x$data_directory), "\n")
-  cat("Data directory exists:", ifelse(x$data_dir_exists, "✓", "✗"), "\n")
+  cat("Data directory exists:", ifelse(x$data_dir_exists, "YES", "NO"), "\n")
   
   if(!is.null(x$database_exists)) {
-    cat("Database exists:", ifelse(x$database_exists, "✓", "✗"), "\n")
+    cat("Database exists:", ifelse(x$database_exists, "YES", "NO"), "\n")
     if(x$database_exists) {
       cat("Database size:", x$database_size_mb, "MB\n")
     }
@@ -83,8 +83,8 @@ print.mobspain_status <- function(x, ...) {
   
   cat("\nDependencies:\n")
   cat("  spanishoddata:", x$spanishoddata_version, "\n")
-  cat("  duckdb:", ifelse(x$duckdb_available, "✓", "✗"), "\n")
-  cat("  sf:", ifelse(x$sf_available, "✓", "✗"), "\n")
+  cat("  duckdb:", ifelse(x$duckdb_available, "YES", "NO"), "\n")
+  cat("  sf:", ifelse(x$sf_available, "YES", "NO"), "\n")
   
   cat("\nConfiguration:\n")
   cat("  Parallel processing:", ifelse(x$parallel_enabled, "enabled", "disabled"), "\n")

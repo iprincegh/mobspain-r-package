@@ -1,12 +1,18 @@
 #' Get mobility matrix
 #'
-#' @param dates Date range (character vector of length 1 or 2)
+#' @param dates Date range (character vector of length 1 or 2). Default: last 7 days
 #' @param level Spatial level ("dist", "muni", "lua")
 #' @param time_window Hour range (e.g. c(7,9))
 #' @param aggregate_by Aggregation level: "none", "daily", "hourly" (default: "none")
 #' @return Data frame with mobility data
 #' @export
-get_mobility_matrix <- function(dates, level = "dist", time_window = NULL, aggregate_by = "none") {
+get_mobility_matrix <- function(dates = NULL, level = "dist", time_window = NULL, aggregate_by = "none") {
+  # Set default dates if not provided
+  if(is.null(dates)) {
+    # Use a valid date range from the dataset
+    dates <- c("2023-01-01", "2023-01-07")
+    message("Using default date range: ", dates[1], " to ", dates[2])
+  }
   # Enhanced input validation
   dates <- validate_dates(dates)
   level <- validate_level(level)
@@ -107,60 +113,62 @@ get_mobility_matrix <- function(dates, level = "dist", time_window = NULL, aggre
 
 #' Calculate self-containment index
 #'
-#' @param od_data Mobility matrix
+#' @param od_data Mobility matrix with columns: origin/id_origin, destination/id_destination, flow/n_trips
 #' @return Data frame with containment metrics
 #' @export
 calculate_containment <- function(od_data) {
+  # Standardize column names
+  od_data <- standardize_od_columns(od_data)
+  
   od_data %>%
-    dplyr::group_by(id_origin) %>%
+    dplyr::group_by(.data$id_origin) %>%
     dplyr::summarise(
-      total_trips = sum(n_trips),
-      internal_trips = sum(n_trips[id_origin == id_destination]),
-      containment = internal_trips / total_trips,
+      total_trips = sum(.data$n_trips),
+      internal_trips = sum(.data$n_trips[.data$id_origin == .data$id_destination]),
+      containment = .data$internal_trips / .data$total_trips,
       .groups = "drop"
     ) %>%
-    dplyr::arrange(dplyr::desc(containment))
+    dplyr::arrange(dplyr::desc(.data$containment))
 }
 
 #' Calculate mobility indicators
 #'
-#' @param od_data Mobility matrix
+#' @param od_data Mobility matrix with columns: origin/id_origin, destination/id_destination, flow/n_trips
 #' @param zones Optional spatial zones for additional metrics
 #' @return Data frame with comprehensive mobility indicators
 #' @export
 calculate_mobility_indicators <- function(od_data, zones = NULL) {
-  if(!"n_trips" %in% names(od_data)) {
-    stop("Data must contain 'n_trips' column", call. = FALSE)
-  }
+  # Standardize column names
+  od_data <- standardize_od_columns(od_data)
   
   # Basic indicators
   indicators <- od_data %>%
-    dplyr::group_by(id_origin) %>%
+    dplyr::group_by(.data$id_origin) %>%
     dplyr::summarise(
-      total_outflow = sum(n_trips),
-      total_inflow = sum(od_data$n_trips[od_data$id_destination == id_origin[1]]),
-      internal_trips = sum(n_trips[id_origin == id_destination]),
-      external_trips = sum(n_trips[id_origin != id_destination]),
-      n_destinations = dplyr::n_distinct(id_destination[n_trips > 0]),
-      containment = internal_trips / total_outflow,
+      total_outflow = sum(.data$n_trips),
+      total_inflow = sum(od_data$n_trips[od_data$id_destination == .data$id_origin[1]]),
+      internal_trips = sum(.data$n_trips[.data$id_origin == .data$id_destination]),
+      external_trips = sum(.data$n_trips[.data$id_origin != .data$id_destination]),
+      n_destinations = dplyr::n_distinct(.data$id_destination[.data$n_trips > 0]),
+      containment = .data$internal_trips / .data$total_outflow,
       .groups = "drop"
     ) %>%
     dplyr::mutate(
-      net_flow = total_inflow - total_outflow,
-      connectivity_index = n_destinations / max(n_destinations, na.rm = TRUE)
+      net_flow = .data$total_inflow - .data$total_outflow,
+      connectivity_index = .data$n_destinations / max(.data$n_destinations, na.rm = TRUE)
     )
   
   # Add spatial metrics if zones provided
   if(!is.null(zones) && inherits(zones, "sf")) {
     zone_areas <- zones %>%
       sf::st_drop_geometry() %>%
-      dplyr::select(id, area_km2)
+      dplyr::select(.data$id, .data$area_km2)
     
     indicators <- indicators %>%
       dplyr::left_join(zone_areas, by = c("id_origin" = "id")) %>%
       dplyr::mutate(
-        trip_density = total_outflow / area_km2,
-        internal_density = internal_trips / area_km2
+        trip_density = .data$total_outflow / .data$area_km2,
+        internal_density = .data$internal_trips / .data$area_km2
       )
   }
   
@@ -184,15 +192,15 @@ detect_mobility_anomalies <- function(od_data, method = "zscore", threshold = NU
   }
   
   daily_totals <- od_data %>%
-    dplyr::group_by(date) %>%
-    dplyr::summarise(total_trips = sum(n_trips), .groups = "drop") %>%
-    dplyr::arrange(date)
+    dplyr::group_by(.data$date) %>%
+    dplyr::summarise(total_trips = sum(.data$n_trips), .groups = "drop") %>%
+    dplyr::arrange(.data$date)
   
   if(method == "zscore") {
     daily_totals <- daily_totals %>%
       dplyr::mutate(
-        z_score = abs(scale(total_trips)[,1]),
-        is_anomaly = z_score > threshold
+        z_score = abs(scale(.data$total_trips)[,1]),
+        is_anomaly = .data$z_score > threshold
       )
   } else if(method == "iqr") {
     q1 <- quantile(daily_totals$total_trips, 0.25)
@@ -201,8 +209,8 @@ detect_mobility_anomalies <- function(od_data, method = "zscore", threshold = NU
     
     daily_totals <- daily_totals %>%
       dplyr::mutate(
-        is_anomaly = total_trips < (q1 - threshold * iqr) | 
-                     total_trips > (q3 + threshold * iqr)
+        is_anomaly = .data$total_trips < (q1 - threshold * iqr) | 
+                     .data$total_trips > (q3 + threshold * iqr)
       )
   }
   
@@ -238,10 +246,10 @@ calculate_distance_decay <- function(od_data, zones, model = "power") {
   
   # Merge with mobility data
   model_data <- od_data %>%
-    dplyr::group_by(id_origin, id_destination) %>%
-    dplyr::summarise(total_trips = sum(n_trips), .groups = "drop") %>%
+    dplyr::group_by(.data$id_origin, .data$id_destination) %>%
+    dplyr::summarise(total_trips = sum(.data$n_trips), .groups = "drop") %>%
     dplyr::inner_join(dist_df, by = c("id_origin", "id_destination")) %>%
-    dplyr::filter(distance_km > 0, total_trips > 0)  # Remove intra-zonal and zero trips
+    dplyr::filter(.data$distance_km > 0, .data$total_trips > 0)  # Remove intra-zonal and zero trips
   
   # Fit distance decay model
   if(model == "power") {

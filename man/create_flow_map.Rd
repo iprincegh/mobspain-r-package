@@ -4,12 +4,12 @@
 \alias{create_flow_map}
 \title{Create flow map}
 \usage{
-create_flow_map(od_data, zones, min_flow = 100)
+create_flow_map(zones, od_data, min_flow = 100)
 }
 \arguments{
-\item{od_data}{Aggregated OD data}
+\item{zones}{Spatial zones (sf object)}
 
-\item{zones}{Spatial zones}
+\item{od_data}{Aggregated OD data with columns: origin/id_origin, destination/id_destination, flow/n_trips}
 
 \item{min_flow}{Minimum flow to display (default: 100)}
 }

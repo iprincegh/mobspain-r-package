@@ -1,3 +1,9 @@
 ^mobspain\.Rproj$
 ^\.Rproj\.user$
 ^LICENSE\.md$
+^\.DS_Store$
+^\.Rhistory$
+^\.git$
+^\.gitignore$
+^.*\.Rcheck$
+^test_all_functions\.R$

@@ -3,8 +3,25 @@ Title: Spanish Mobility Data Analysis Toolkit
 Version: 0.1.0
 Authors@R: 
     person("Prince", "Oppong Boakye", email = "prynx44@gmail.com", role = c("aut", "cre"))
+Author: Prince Oppong Boakye [aut, cre]
+Maintainer: Prince Oppong Boakye <prynx44@gmail.com>
 Description: Tools for analyzing Spanish mobility patterns using MITMA data.
 License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Imports:
+    spanishoddata,
+    sf,
+    dplyr,
+    duckdb,
+    DBI,
+    ggplot2,
+    glue,
+    lubridate,
+    leaflet,
+    digest,
+    rlang,
+    stats
 Encoding: UTF-8
 LazyData: true
 Imports:
