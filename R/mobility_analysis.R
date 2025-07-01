@@ -186,9 +186,10 @@ calculate_mobility_indicators <- function(od_data, zones = NULL) {
 #' @param od_data Mobility matrix with date column
 #' @param method Detection method: "zscore", "iqr", "isolation_forest"
 #' @param threshold Threshold for anomaly detection (default: 2 for zscore, 1.5 for iqr)
+#' @param by_weekday Separate analysis for weekdays vs weekends (default: TRUE)
 #' @return Data frame with anomaly flags
 #' @export
-detect_mobility_anomalies <- function(od_data, method = "zscore", threshold = NULL) {
+detect_mobility_anomalies <- function(od_data, method = "zscore", threshold = NULL, by_weekday = TRUE) {
   if(!"date" %in% names(od_data)) {
     stop("Data must contain 'date' column", call. = FALSE)
   }
@@ -200,24 +201,60 @@ detect_mobility_anomalies <- function(od_data, method = "zscore", threshold = NU
   daily_totals <- od_data %>%
     dplyr::group_by(.data$date) %>%
     dplyr::summarise(total_trips = sum(.data$n_trips), .groups = "drop") %>%
-    dplyr::arrange(.data$date)
+    dplyr::arrange(.data$date) %>%
+    dplyr::mutate(
+      weekday = lubridate::wday(.data$date, label = TRUE),
+      is_weekend = lubridate::wday(.data$date) %in% c(1, 7)  # Sunday = 1, Saturday = 7
+    )
+  
+  if(by_weekday) {
+    # Separate analysis for weekdays and weekends
+    daily_totals <- daily_totals %>%
+      dplyr::group_by(.data$is_weekend) %>%
+      dplyr::mutate(
+        group_mean = mean(.data$total_trips, na.rm = TRUE),
+        group_sd = sd(.data$total_trips, na.rm = TRUE)
+      ) %>%
+      dplyr::ungroup()
+  }
   
   if(method == "zscore") {
-    daily_totals <- daily_totals %>%
-      dplyr::mutate(
-        z_score = abs(scale(.data$total_trips)[,1]),
-        is_anomaly = .data$z_score > threshold
-      )
+    if(by_weekday) {
+      daily_totals <- daily_totals %>%
+        dplyr::mutate(
+          z_score = abs((.data$total_trips - .data$group_mean) / .data$group_sd),
+          is_anomaly = .data$z_score > threshold
+        )
+    } else {
+      daily_totals <- daily_totals %>%
+        dplyr::mutate(
+          z_score = abs(scale(.data$total_trips)[,1]),
+          is_anomaly = .data$z_score > threshold
+        )
+    }
   } else if(method == "iqr") {
-    q1 <- quantile(daily_totals$total_trips, 0.25)
-    q3 <- quantile(daily_totals$total_trips, 0.75)
-    iqr <- q3 - q1
-    
-    daily_totals <- daily_totals %>%
-      dplyr::mutate(
-        is_anomaly = .data$total_trips < (q1 - threshold * iqr) | 
-                     .data$total_trips > (q3 + threshold * iqr)
-      )
+    if(by_weekday) {
+      daily_totals <- daily_totals %>%
+        dplyr::group_by(.data$is_weekend) %>%
+        dplyr::mutate(
+          q1 = quantile(.data$total_trips, 0.25),
+          q3 = quantile(.data$total_trips, 0.75),
+          iqr = .data$q3 - .data$q1,
+          is_anomaly = .data$total_trips < (.data$q1 - threshold * .data$iqr) | 
+                       .data$total_trips > (.data$q3 + threshold * .data$iqr)
+        ) %>%
+        dplyr::ungroup()
+    } else {
+      q1 <- quantile(daily_totals$total_trips, 0.25)
+      q3 <- quantile(daily_totals$total_trips, 0.75)
+      iqr <- q3 - q1
+      
+      daily_totals <- daily_totals %>%
+        dplyr::mutate(
+          is_anomaly = .data$total_trips < (q1 - threshold * iqr) | 
+                       .data$total_trips > (q3 + threshold * iqr)
+        )
+    }
   }
   
   return(daily_totals)
@@ -279,6 +316,9 @@ calculate_distance_decay <- function(od_data, zones, model = "power") {
   }
   
   return(list(
+    model_summary = summary(fit),
+    r_squared = summary(fit)$r.squared,
+    decay_exponent = ifelse(model == "power", -coef(fit)[2], -coef(fit)[2]),
     parameters = params,
     data = model_data,
     fit = fit

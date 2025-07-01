@@ -23,6 +23,20 @@ library(mobspain)
 
 The `mobspain` package provides a comprehensive toolkit for analyzing Spanish mobility patterns using MITMA (Ministry of Transport, Mobility and Urban Agenda) data. This vignette demonstrates the main functionality.
 
+### About MITMA Data
+
+The MITMA mobility data is derived from mobile phone analytics and provides origin-destination (OD) matrices representing population movements across Spain. Key characteristics:
+
+- **Spatial Coverage**: Three administrative levels available
+  - Districts (`dist`): ~3,909 zones (finest granularity)
+  - Municipalities (`muni`): ~8,131 zones  
+  - Large Urban Areas (`lua`): ~85 zones (metropolitan areas)
+- **Temporal Coverage**: Data available from February 14, 2020 onwards
+- **Time Resolution**: Hourly data (0-23 hours) and daily aggregations
+- **Data Source**: Aggregated and anonymized mobile phone positioning data
+- **Methodology**: Based on official Spanish transport ministry standards
+- **Reference**: [MITMA Methodological Report v8](https://www.transportes.gob.es/recursos_mfom/paginabasica/recursos/a3_informe_metodologico_estudio_movilidad_mitms_v8.pdf)
+
 ## Setup
 
 First, initialize a data directory for storing MITMA data:
@@ -33,6 +47,11 @@ init_data_dir("~/spanish_mobility_data")
 
 # Check package status
 mobspain_status()
+
+# Get optimal parameters for exploratory analysis
+optimal_params <- get_optimal_parameters("exploratory", "medium")
+print("Recommended parameters for exploratory analysis:")
+print(optimal_params)
 ```
 
 ## Working with Sample Data
@@ -52,69 +71,176 @@ zone_index <- create_zone_index(sample_zones)
 
 ### Getting Spatial Zones
 
-Download real Spanish administrative zones:
+Download Spanish administrative boundaries that correspond to MITMA data zones:
 
 ```{r spatial_zones}
-# Get districts (around 3,909 zones)
-districts <- get_spatial_zones("dist")
+# Get districts (finest spatial resolution)
+# These are sub-municipal divisions used by MITMA
+districts <- get_spatial_zones("dist")  # ~3,909 zones
 
-# Get municipalities
-municipalities <- get_spatial_zones("muni")
+# Get municipalities (standard administrative units)
+# These correspond to official Spanish municipalities
+municipalities <- get_spatial_zones("muni")  # ~8,131 zones
+
+# Get large urban areas (metropolitan areas)
+# These represent major urban agglomerations
+large_urban_areas <- get_spatial_zones("lua")  # ~85 zones
+
+# Check the structure of spatial data
+print(paste("Districts loaded:", nrow(districts), "zones"))
+print(paste("Area calculated for:", sum(!is.na(districts$area_km2)), "zones"))
 ```
 
 ### Mobility Data Retrieval
 
-Get real mobility matrices from MITMA:
+Get real mobility matrices from MITMA. The data represents aggregated trips between spatial zones:
 
 ```{r mobility_data}
-# Get mobility data for a week
+# Get mobility data for a week (districts level)
+# Note: Dates should be >= 2020-02-14 when MITMA data starts
 mobility_data <- get_mobility_matrix(
   dates = c("2023-01-01", "2023-01-07"),
-  level = "dist"
+  level = "dist"  # Districts: ~3,909 zones
 )
 
-# Get morning commute data
+# Get morning rush hour data (7-9 AM)
+# This captures commuting patterns
 commute_data <- get_mobility_matrix(
   dates = c("2023-03-01", "2023-03-07"), 
   level = "dist",
-  time_window = c(7, 9)  # 7-9 AM
+  time_window = c(7, 9)  # Morning commute hours
+)
+
+# Alternative: Get municipality-level data (fewer zones, faster processing)
+muni_mobility <- get_mobility_matrix(
+  dates = c("2023-01-01", "2023-01-03"),
+  level = "muni"  # Municipalities: ~8,131 zones
 )
 ```
 
 ## Analytics
 
+### Understanding MITMA Mobility Data
+
+The mobility matrices represent estimated trips between zones based on mobile phone positioning:
+
+```{r data_exploration}
+# Examine the structure of mobility data
+print("Mobility data structure:")
+print(head(mobility_data))
+
+# Validate data quality
+quality_report <- validate_mitma_data(mobility_data)
+print("Data quality summary:")
+print(quality_report)
+
+# Check for holidays that might affect patterns
+holiday_check <- check_spanish_holidays(unique(mobility_data$date))
+holidays_found <- holiday_check[holiday_check$is_likely_holiday, ]
+if(nrow(holidays_found) > 0) {
+  print("Holidays found in data period:")
+  print(holidays_found)
+}
+
+# Basic data coverage statistics
+print(paste("Total trips recorded:", sum(mobility_data$n_trips)))
+print(paste("Number of origin zones:", length(unique(mobility_data$id_origin))))
+print(paste("Number of destination zones:", length(unique(mobility_data$id_destination))))
+print(paste("Date range:", min(mobility_data$date), "to", max(mobility_data$date)))
+```
+
 ### Containment Analysis
 
-Calculate self-containment indices:
+Self-containment measures the proportion of trips that stay within the same zone (internal mobility vs. external trips):
 
 ```{r containment}
+# Calculate containment indices for all zones
 containment <- calculate_containment(mobility_data)
-head(containment[order(-containment$containment), ])
+
+# Display most self-contained zones
+print("Top 10 most self-contained zones:")
+top_contained <- head(containment[order(-containment$containment), ], 10)
+print(top_contained)
+
+# Summary statistics
+print(paste("Mean containment index:", round(mean(containment$containment, na.rm = TRUE), 3)))
+print(paste("Zones with >50% containment:", sum(containment$containment > 0.5, na.rm = TRUE)))
 ```
 
 ### Advanced Mobility Indicators
 
-Compute comprehensive mobility metrics:
+Compute comprehensive mobility metrics including connectivity, flow balance, and spatial characteristics:
 
 ```{r indicators}
+# Calculate comprehensive mobility indicators
 indicators <- calculate_mobility_indicators(mobility_data, districts)
-print(indicators)
+
+# Display key indicators
+print("Sample of mobility indicators:")
+print(head(indicators[, c("id_origin", "total_outflow", "total_inflow", 
+                         "containment", "connectivity_index", "net_flow")]))
+
+# Analyze mobility patterns
+print("Mobility pattern summary:")
+print(paste("Zones with net outflow (more departures):", sum(indicators$net_flow < 0, na.rm = TRUE)))
+print(paste("Zones with net inflow (more arrivals):", sum(indicators$net_flow > 0, na.rm = TRUE)))
+print(paste("Mean connectivity index:", round(mean(indicators$connectivity_index, na.rm = TRUE), 3)))
 ```
 
 ### Anomaly Detection
 
-Detect unusual mobility patterns:
+Detect unusual mobility patterns that deviate from normal behavior (useful for identifying special events, holidays, disruptions):
 
 ```{r anomalies}
-anomalies <- detect_mobility_anomalies(mobility_data, method = "zscore")
+# Detect anomalies using z-score method (accounts for weekday/weekend differences)
+anomalies <- detect_mobility_anomalies(mobility_data, method = "zscore", threshold = 2, by_weekday = TRUE)
+
+# Show detected anomalies
+print("Detected mobility anomalies:")
+if(any(anomalies$is_anomaly)) {
+  anomaly_dates <- anomalies[anomalies$is_anomaly, ]
+  print(anomaly_dates[, c("date", "total_trips", "z_score", "is_anomaly", "weekday")])
+  
+  # Check if anomalies correspond to holidays
+  anomaly_holidays <- check_spanish_holidays(anomaly_dates$date)
+  holiday_anomalies <- anomaly_holidays[anomaly_holidays$is_likely_holiday, ]
+  if(nrow(holiday_anomalies) > 0) {
+    print("Anomalies corresponding to holidays:")
+    print(holiday_anomalies)
+  }
+} else {
+  print("No significant anomalies detected in this period")
+}
+
+# Compare weekend vs weekday patterns
+print("Weekend vs Weekday mobility patterns:")
+weekend_summary <- anomalies %>%
+  dplyr::group_by(is_weekend) %>%
+  dplyr::summarise(
+    avg_trips = mean(total_trips, na.rm = TRUE),
+    anomaly_rate = mean(is_anomaly, na.rm = TRUE),
+    .groups = "drop"
+  )
+print(weekend_summary)
 ```
 
 ### Distance-Decay Modeling
 
-Model the relationship between distance and mobility flows:
+Model how mobility flows decrease with distance (fundamental principle in spatial interaction modeling):
 
 ```{r distance_decay}
+# Calculate distance-decay relationship
+# This models how trip frequency relates to geographic distance
 decay_model <- calculate_distance_decay(mobility_data, districts)
+
+# Display model results
+print("Distance-decay model summary:")
+print(decay_model$model_summary)
+print(paste("R-squared:", round(decay_model$r_squared, 3)))
+print(paste("Distance decay exponent:", round(decay_model$decay_exponent, 3)))
+
+# Interpretation: Higher negative exponent = stronger distance effect
+# Typical values range from -0.5 to -2.0 for human mobility
 ```
 
 ## Visualization
@@ -183,4 +309,21 @@ mobspain_status()
 
 ## Conclusion
 
-The `mobspain` package provides a complete toolkit for Spanish mobility analysis, from data retrieval to advanced analytics and visualization. For more information, see the package documentation and example scripts.
+The `mobspain` package provides a complete toolkit for Spanish mobility analysis, from data retrieval to advanced analytics and visualization. 
+
+### Key Methodological Notes
+
+When working with MITMA data, consider:
+
+- **Data Quality**: Mobile phone data represents a sample of the population; results should be interpreted as relative patterns rather than absolute counts
+- **Temporal Patterns**: Weekdays vs. weekends show different mobility patterns; holidays and special events may create anomalies
+- **Spatial Resolution**: District-level data provides fine detail but requires more computational resources; municipality or LUA levels may be more appropriate for regional studies
+- **Privacy Protection**: All data is aggregated and anonymized according to Spanish data protection standards
+
+### Further Resources
+
+- **MITMA Methodology**: [Official methodological report](https://www.transportes.gob.es/recursos_mfom/paginabasica/recursos/a3_informe_metodologico_estudio_movilidad_mitms_v8.pdf)
+- **Package Documentation**: `?mobspain` or `help(package = "mobspain")`
+- **Example Scripts**: See `complete_working_example.R` and `simple_mobspain_example.R` in the package repository
+
+For more information, see the package documentation and example scripts.

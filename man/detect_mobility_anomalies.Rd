@@ -4,7 +4,12 @@
 \alias{detect_mobility_anomalies}
 \title{Detect anomalous mobility patterns}
 \usage{
-detect_mobility_anomalies(od_data, method = "zscore", threshold = NULL)
+detect_mobility_anomalies(
+  od_data,
+  method = "zscore",
+  threshold = NULL,
+  by_weekday = TRUE
+)
 }
 \arguments{
 \item{od_data}{Mobility matrix with date column}
@@ -12,6 +17,8 @@ detect_mobility_anomalies(od_data, method = "zscore", threshold = NULL)
 \item{method}{Detection method: "zscore", "iqr", "isolation_forest"}
 
 \item{threshold}{Threshold for anomaly detection (default: 2 for zscore, 1.5 for iqr)}
+
+\item{by_weekday}{Separate analysis for weekdays vs weekends (default: TRUE)}
 }
 \value{
 Data frame with anomaly flags

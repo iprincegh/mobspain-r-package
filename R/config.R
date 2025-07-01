@@ -89,3 +89,57 @@ print.mobspain_status <- function(x, ...) {
   cat("\nConfiguration:\n")
   cat("  Parallel processing:", ifelse(x$parallel_enabled, "enabled", "disabled"), "\n")
 }
+
+#' Get optimal analysis parameters based on MITMA data characteristics
+#' @param analysis_type Type of analysis: "exploratory", "detailed", "regional", "temporal"
+#' @param data_size Expected data size: "small", "medium", "large"
+#' @return List with recommended parameters
+#' @export
+get_optimal_parameters <- function(analysis_type = "exploratory", data_size = "medium") {
+  
+  params <- list()
+  
+  if(analysis_type == "exploratory") {
+    params$spatial_level <- "lua"  # Large urban areas for faster processing
+    params$date_range_days <- 7
+    params$time_window <- NULL
+    params$min_flow_threshold <- 100
+    
+  } else if(analysis_type == "detailed") {
+    params$spatial_level <- "dist"  # Districts for detailed analysis
+    params$date_range_days <- 30
+    params$time_window <- c(7, 9)  # Focus on commuting
+    params$min_flow_threshold <- 50
+    
+  } else if(analysis_type == "regional") {
+    params$spatial_level <- "muni"  # Municipalities for regional studies
+    params$date_range_days <- 90
+    params$time_window <- NULL
+    params$min_flow_threshold <- 200
+    
+  } else if(analysis_type == "temporal") {
+    params$spatial_level <- "lua"  # Fewer zones for temporal focus
+    params$date_range_days <- 365
+    params$time_window <- NULL
+    params$min_flow_threshold <- 500
+  }
+  
+  # Adjust for data size
+  if(data_size == "small") {
+    params$date_range_days <- min(params$date_range_days, 14)
+    params$min_flow_threshold <- params$min_flow_threshold * 2
+  } else if(data_size == "large") {
+    params$spatial_level <- ifelse(params$spatial_level == "dist", "muni", params$spatial_level)
+    params$min_flow_threshold <- params$min_flow_threshold / 2
+  }
+  
+  # Add memory and performance recommendations
+  zone_counts <- list("dist" = 3909, "muni" = 8131, "lua" = 85)
+  estimated_combinations <- zone_counts[[params$spatial_level]]^2 * params$date_range_days
+  
+  params$estimated_data_points <- estimated_combinations
+  params$memory_recommendation <- ifelse(estimated_combinations > 1e6, "Use data filtering", "Standard processing")
+  params$processing_time <- ifelse(estimated_combinations > 5e5, "Long (>5 min)", "Fast (<2 min)")
+  
+  return(params)
+}

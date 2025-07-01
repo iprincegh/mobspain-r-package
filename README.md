@@ -22,11 +22,12 @@ A comprehensive R package for analyzing Spanish mobility patterns using MITMA (M
 ## 🚀 Features
 
 - **📊 Complete Data Access**: Download and process real Spanish mobility data from MITMA
-- **🎯 Advanced Analytics**: Containment indices, anomaly detection, distance-decay modeling, comprehensive mobility indicators
+- **🎯 Advanced Analytics**: Containment indices, anomaly detection with weekday/weekend context, distance-decay modeling, comprehensive mobility indicators
 - **🗺️ Rich Visualizations**: Interactive flow maps, choropleth maps, heatmaps, time series plots, and distance-decay plots  
 - **💾 Smart Data Management**: Automatic caching, data directory setup, and efficient processing
-- **🔧 Production Ready**: All 18 functions tested and working with real data
+- **🔧 Production Ready**: All 21 functions tested and working with real data
 - **⚙️ Flexible Configuration**: Customizable settings for parallel processing, caching, and advanced features
+- **🛡️ Data Quality Tools**: MITMA-specific validation, holiday detection, and optimal parameter recommendations
 
 ## 📦 Installation
 
@@ -118,13 +119,17 @@ source("simple_mobspain_example.R")
 |----------|-------------|---------|
 | `configure_mobspain()` | Package configuration | ✅ Working |
 | `mobspain_status()` | Package diagnostics | ✅ Working |
+| `validate_mitma_data()` | Data quality validation | ✅ Working |
+| `check_spanish_holidays()` | Holiday detection | ✅ Working |
+| `get_optimal_parameters()` | Parameter recommendations | ✅ Working |
 
 ## 🗺️ Data Sources
 
-- **MITMA (Ministry of Transport)**: Official Spanish mobility data
-- **Administrative Boundaries**: Districts, municipalities, and larger urban areas
-- **Real-time Downloads**: Automatic data retrieval and caching
-- **Comprehensive Coverage**: All Spanish territories included
+- **MITMA (Ministry of Transport)**: Official Spanish mobility data from mobile phone analytics
+- **Administrative Boundaries**: Districts (~3,909), municipalities (~8,131), and large urban areas (~85)
+- **Real-time Downloads**: Automatic data retrieval and caching from February 2020 onwards
+- **Comprehensive Coverage**: All Spanish territories with hourly and daily temporal resolution
+- **Methodology**: Based on [MITMA official standards v8](https://www.transportes.gob.es/recursos_mfom/paginabasica/recursos/a3_informe_metodologico_estudio_movilidad_mitms_v8.pdf)
 
 ## 📈 Example Analysis
 
