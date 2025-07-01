@@ -1,20 +1,6 @@
 # mobspain: Spanish Mobility Data Analysis Toolkit
 
-[![R-CMD-check](https://github.com/iprincegh/mobspain-r-package/workflows/R-CMD-check/badge.svg)](## 🔗 Links
-
-- **GitHub Repository**: https://github.com/iprincegh/mobspain-r-package
-- **Issue Tracker**: https://github.com/iprincegh/mobspain-r-package/issues
-- **MITMA Data Source**: [Spanish Ministry of Transport](https://www.mitma.gob.es/)
-
-## 🙏 Acknowledgments
-
-- **spanishoddata**: Base data access functionality
-- **MITMA**: Spanish mobility data provision
-- **R Community**: Amazing ecosystem and tools
-
----
-
-**Ready to analyze Spanish mobility patterns? Install mobspain and start exploring!** 🇪🇸📊*Ready to analyze Spanish mobility patterns? Install mobspain and start exploring!** 🇪🇸📊ithub.com/iprincegh/mobspain-r-package/actions)
+[![R-CMD-check](https://github.com/iprincegh/mobspain-r-package/workflows/R-CMD-check/badge.svg)](https://github.com/iprincegh/mobspain-r-package/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A comprehensive R package for analyzing Spanish mobility patterns using MITMA (Ministry of Transport, Mobility and Urban Agenda) data. Built on top of the `spanishoddata` package with enhanced analytics, visualization, and performance features.
@@ -101,14 +87,23 @@ source("simple_mobspain_example.R")
 | `create_zone_index()` | Spatial zone indexing | ✅ Working |
 | `connect_mobility_db()` | Database connection management | ✅ Working |
 | `sample_zones` | Sample data for testing | ✅ Working |
+| `standardize_od_columns()` | Flexible data input handling | ✅ Working |
 
-### 🚀 Advanced Analytics & Visualization
+### 🚀 Advanced Analytics & Validation
 
 | Function | Description | Status |
 |----------|-------------|---------|
 | `calculate_mobility_indicators()` | Comprehensive mobility metrics | ✅ Working |
-| `detect_mobility_anomalies()` | Statistical anomaly detection | ✅ Working |
+| `detect_mobility_anomalies()` | Statistical anomaly detection (weekday/weekend aware) | ✅ Working |
 | `calculate_distance_decay()` | Distance-decay relationship modeling | ✅ Working |
+| `validate_mitma_data()` | Data quality validation | ✅ Working |
+| `check_spanish_holidays()` | Holiday detection | ✅ Working |
+| `get_optimal_parameters()` | Parameter recommendations | ✅ Working |
+
+### 🎨 Visualization Functions
+
+| Function | Description | Status |
+|----------|-------------|---------|
 | `create_choropleth_map()` | Spatial indicator mapping | ✅ Working |
 | `plot_mobility_heatmap()` | Flow matrix heatmaps | ✅ Working |
 | `plot_distance_decay()` | Distance-decay visualization | ✅ Working |
@@ -119,9 +114,8 @@ source("simple_mobspain_example.R")
 |----------|-------------|---------|
 | `configure_mobspain()` | Package configuration | ✅ Working |
 | `mobspain_status()` | Package diagnostics | ✅ Working |
-| `validate_mitma_data()` | Data quality validation | ✅ Working |
-| `check_spanish_holidays()` | Holiday detection | ✅ Working |
-| `get_optimal_parameters()` | Parameter recommendations | ✅ Working |
+
+**Total: 21 Working Functions** ✅
 
 ## 🗺️ Data Sources
 
@@ -137,39 +131,84 @@ source("simple_mobspain_example.R")
 # Complete mobility analysis workflow
 library(mobspain)
 
-# 1. Setup
+# 1. Setup and validation
 init_data_dir()
+mobspain_status()
+
+# Get optimal parameters for your analysis
+optimal_params <- get_optimal_parameters("exploratory", "medium")
 
 # 2. Get spatial data
-zones <- get_spatial_zones()
+zones <- get_spatial_zones("dist")  # Districts level
 cat("Downloaded", nrow(zones), "spatial zones")
 
 # 3. Get mobility data 
-mobility <- get_mobility_matrix(dates = c("2023-01-01", "2023-01-07"))
+mobility <- get_mobility_matrix(
+  dates = c("2023-01-01", "2023-01-07"),
+  level = "dist"
+)
 
-# 4. Calculate metrics
+# 4. Data validation and quality checks
+quality_report <- validate_mitma_data(mobility)
+holidays <- check_spanish_holidays(unique(mobility$date))
+
+# 5. Calculate comprehensive metrics
 containment <- calculate_containment(mobility)
-top_contained <- head(containment[order(-containment$containment), ], 10)
+indicators <- calculate_mobility_indicators(mobility, zones)
+anomalies <- detect_mobility_anomalies(mobility, method = "zscore", by_weekday = TRUE)
 
-# 5. Visualize
+# 6. Advanced analytics
+decay_model <- calculate_distance_decay(mobility, zones)
+print(paste("Distance decay R²:", round(decay_model$r_squared, 3)))
+
+# 7. Visualizations
 flow_map <- create_flow_map(zones, mobility, min_flow = 500)
 daily_plot <- plot_daily_mobility(mobility)
+heatmap <- plot_mobility_heatmap(mobility, top_n = 20)
+choropleth <- create_choropleth_map(zones, indicators, variable = "containment")
 
-# 6. Results
-print(top_contained)
-flow_map  # Interactive map
-daily_plot  # Time series plot
+# 8. Results
+print("Top 10 most self-contained zones:")
+print(head(containment[order(-containment$containment), ], 10))
+
+flow_map      # Interactive flow map
+daily_plot    # Time series plot
+heatmap       # Flow matrix heatmap
+choropleth    # Choropleth map
 ```
 
 ## 🔧 Configuration
 
-The package automatically manages data downloads and storage:
+The package supports flexible configuration and intelligent data management:
 
 ```r
-# Data is stored in: ~/spanish_mobility_data/
-# Automatic caching for faster subsequent access
-# Configurable through spanishoddata package settings
+# Configure package settings
+configure_mobspain(
+  parallel = TRUE,         # Enable parallel processing
+  n_cores = 4,            # Number of cores to use
+  cache_enabled = TRUE,   # Enable intelligent caching
+  data_dir = "~/spanish_mobility_data/"  # Custom data directory
+)
+
+# Check configuration and package status
+mobspain_status()
+
+# Get optimal parameters for your analysis type
+optimal_params <- get_optimal_parameters(
+  analysis_type = "exploratory",  # or "detailed", "quick"
+  computational_resources = "medium"  # or "low", "high"
+)
+
+# Data validation and quality checks
+quality_report <- validate_mitma_data(your_mobility_data)
+holidays <- check_spanish_holidays(c("2023-01-01", "2023-12-25"))
 ```
+
+### Data Storage
+- **Default location**: `~/spanish_mobility_data/`
+- **Automatic caching**: Smart caching for faster subsequent access
+- **Configurable**: Custom data directories and cache settings
+- **Efficient**: Optimized storage and retrieval using DuckDB
 
 ## 📚 Documentation
 
@@ -192,8 +231,14 @@ MIT License. See [LICENSE](LICENSE) for details.
 - **Issue Tracker**: https://github.com/iprincegh/mobspain-r-package/issues
 - **MITMA Data Source**: [Spanish Ministry of Transport](https://www.mitma.gob.es/)
 
+## 🙏 Acknowledgments
+
+- **spanishoddata**: Base data access functionality
+- **MITMA**: Spanish mobility data provision
+- **R Community**: Amazing ecosystem and tools
+
 ---
 
-**Ready to analyze Spanish mobility patterns? Install mobspain and start exploring!** �
+**Ready to analyze Spanish mobility patterns? Install mobspain and start exploring!** 🇪🇸📊
 
 

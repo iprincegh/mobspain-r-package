@@ -5,7 +5,13 @@ Authors@R:
     person("Prince", "Oppong Boakye", email = "prynx44@gmail.com", role = c("aut", "cre"))
 Author: Prince Oppong Boakye [aut, cre]
 Maintainer: Prince Oppong Boakye <prynx44@gmail.com>
-Description: Tools for analyzing Spanish mobility patterns using MITMA data.
+Description: A comprehensive toolkit for analyzing Spanish mobility patterns using 
+    MITMA (Ministry of Transport, Mobility and Urban Agenda) data. Provides 21 
+    functions for data retrieval, advanced analytics, validation, and visualization. 
+    Features include containment analysis, anomaly detection with weekday/weekend 
+    context, distance-decay modeling, interactive flow maps, and comprehensive 
+    mobility indicators. Built on spanishoddata with enhanced performance, 
+    intelligent caching, and production-ready data quality tools.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
