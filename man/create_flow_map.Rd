@@ -14,7 +14,7 @@ create_flow_map(zones, od_data, min_flow = 100)
 \item{min_flow}{Minimum flow to display (default: 100)}
 }
 \value{
-leaflet map
+leaflet map or ggplot if leaflet fails
 }
 \description{
 Create flow map

@@ -7,7 +7,7 @@
 plot_mobility_heatmap(od_data, top_n = 50)
 }
 \arguments{
-\item{od_data}{Mobility matrix}
+\item{od_data}{Mobility matrix with columns: origin/id_origin, destination/id_destination, flow/n_trips}
 
 \item{top_n}{Number of top flows to show (default: 50)}
 }

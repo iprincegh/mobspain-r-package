@@ -8,6 +8,15 @@ get_spatial_zones <- function(level = "dist", version = 2) {
   tryCatch({
     zones <- spanishoddata::spod_get_zones(level, ver = version)
 
+    # Standardize column names - spanishoddata uses different column names
+    if("id_dist" %in% names(zones)) {
+      zones$id <- zones$id_dist
+    } else if("id_muni" %in% names(zones)) {
+      zones$id <- zones$id_muni
+    } else if("id_lua" %in% names(zones)) {
+      zones$id <- zones$id_lua
+    }
+    
     # Calculate area
     zones$area_km2 <- as.numeric(sf::st_area(zones)) / 1e6
     return(zones)
@@ -17,7 +26,7 @@ get_spatial_zones <- function(level = "dist", version = 2) {
 
     # Load sample spatial data
     utils::data("sample_zones", package = "mobspain", envir = environment())
-    return(sample_zones)
+    return(get("sample_zones", envir = environment()))
   })
 }
 
@@ -35,5 +44,5 @@ create_zone_index <- function(zones) {
 
   zones %>%
     sf::st_make_valid() %>%
-    dplyr::mutate(centroid = sf::st_centroid(geometry))
+    dplyr::mutate(centroid = sf::st_centroid(.data$geometry))
 }

@@ -6,6 +6,13 @@
 \usage{
 validate_time_window(time_window)
 }
+\arguments{
+\item{time_window}{Time window to validate}
+}
+\value{
+Validated time window
+}
 \description{
 Validate time window
 }
+\keyword{internal}

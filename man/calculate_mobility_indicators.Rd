@@ -7,7 +7,7 @@
 calculate_mobility_indicators(od_data, zones = NULL)
 }
 \arguments{
-\item{od_data}{Mobility matrix}
+\item{od_data}{Mobility matrix with columns: origin/id_origin, destination/id_destination, flow/n_trips}
 
 \item{zones}{Optional spatial zones for additional metrics}
 }

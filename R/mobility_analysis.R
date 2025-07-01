@@ -141,19 +141,25 @@ calculate_mobility_indicators <- function(od_data, zones = NULL) {
   # Standardize column names
   od_data <- standardize_od_columns(od_data)
   
+  # Calculate inflow separately
+  inflow_data <- od_data %>%
+    dplyr::group_by(.data$id_destination) %>%
+    dplyr::summarise(total_inflow = sum(.data$n_trips), .groups = "drop")
+  
   # Basic indicators
   indicators <- od_data %>%
     dplyr::group_by(.data$id_origin) %>%
     dplyr::summarise(
       total_outflow = sum(.data$n_trips),
-      total_inflow = sum(od_data$n_trips[od_data$id_destination == .data$id_origin[1]]),
       internal_trips = sum(.data$n_trips[.data$id_origin == .data$id_destination]),
       external_trips = sum(.data$n_trips[.data$id_origin != .data$id_destination]),
       n_destinations = dplyr::n_distinct(.data$id_destination[.data$n_trips > 0]),
       containment = .data$internal_trips / .data$total_outflow,
       .groups = "drop"
     ) %>%
+    dplyr::left_join(inflow_data, by = c("id_origin" = "id_destination")) %>%
     dplyr::mutate(
+      total_inflow = ifelse(is.na(.data$total_inflow), 0, .data$total_inflow),
       net_flow = .data$total_inflow - .data$total_outflow,
       connectivity_index = .data$n_destinations / max(.data$n_destinations, na.rm = TRUE)
     )

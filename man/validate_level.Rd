@@ -6,6 +6,13 @@
 \usage{
 validate_level(level)
 }
+\arguments{
+\item{level}{Spatial level to validate}
+}
+\value{
+Standardized level name
+}
 \description{
 Validate spatial level
 }
+\keyword{internal}

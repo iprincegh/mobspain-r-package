@@ -7,7 +7,7 @@
 plot_daily_mobility(od_data)
 }
 \arguments{
-\item{od_data}{Mobility matrix}
+\item{od_data}{Mobility matrix with columns: origin/id_origin, destination/id_destination, flow/n_trips, date}
 }
 \value{
 ggplot object

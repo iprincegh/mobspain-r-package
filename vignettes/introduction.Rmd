@@ -146,8 +146,7 @@ Create maps showing spatial indicators:
 choropleth <- create_choropleth_map(
   districts, 
   indicators, 
-  variable = "containment",
-  title = "Self-Containment by District"
+  variable = "containment"
 )
 choropleth
 ```

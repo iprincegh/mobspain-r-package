@@ -2,14 +2,17 @@
 % Please edit documentation in R/validation.R
 \name{validate_dates}
 \alias{validate_dates}
-\title{Enhanced validation utilities}
+\title{Validate date inputs}
 \usage{
 validate_dates(dates)
 }
-\description{
-Enhanced validation utilities
+\arguments{
+\item{dates}{Date vector to validate}
 }
-\keyword{Validate}
-\keyword{date}
-\keyword{inputs}
+\value{
+Validated date vector
+}
+\description{
+Validate date inputs
+}
 \keyword{internal}

@@ -5,14 +5,14 @@
 \title{Get mobility matrix}
 \usage{
 get_mobility_matrix(
-  dates,
+  dates = NULL,
   level = "dist",
   time_window = NULL,
   aggregate_by = "none"
 )
 }
 \arguments{
-\item{dates}{Date range (character vector of length 1 or 2)}
+\item{dates}{Date range (character vector of length 1 or 2). Default: last 7 days}
 
 \item{level}{Spatial level ("dist", "muni", "lua")}
 

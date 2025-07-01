@@ -21,20 +21,7 @@ Imports:
     leaflet,
     digest,
     rlang,
-    stats
-Encoding: UTF-8
-LazyData: true
-Imports:
-    spanishoddata,
-    sf,
-    dplyr,
-    duckdb,
-    DBI,
-    ggplot2,
-    glue,
-    lubridate,
-    leaflet,
-    digest,
+    stats,
     viridis,
     tools
 Suggests: 
