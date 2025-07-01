@@ -1,7 +1,12 @@
 #' Enhanced validation utilities
+#' @name validation
 #' @keywords internal
+NULL
 
 #' Validate date inputs
+#' @param dates Date vector to validate
+#' @return Validated date vector
+#' @keywords internal
 validate_dates <- function(dates) {
   if(is.null(dates) || length(dates) == 0) {
     stop("Dates cannot be NULL or empty", call. = FALSE)
@@ -30,6 +35,9 @@ validate_dates <- function(dates) {
 }
 
 #' Validate spatial level
+#' @param level Spatial level to validate
+#' @return Standardized level name
+#' @keywords internal
 validate_level <- function(level) {
   valid_levels <- c("dist", "districts", "muni", "municipalities", "lua", "large_urban_areas")
   if(!level %in% valid_levels) {
@@ -47,6 +55,9 @@ validate_level <- function(level) {
 }
 
 #' Validate time window
+#' @param time_window Time window to validate
+#' @return Validated time window
+#' @keywords internal
 validate_time_window <- function(time_window) {
   if(is.null(time_window)) return(NULL)
   

@@ -4,14 +4,21 @@
 \alias{get_mobility_matrix}
 \title{Get mobility matrix}
 \usage{
-get_mobility_matrix(dates, level = "dist", time_window = NULL)
+get_mobility_matrix(
+  dates,
+  level = "dist",
+  time_window = NULL,
+  aggregate_by = "none"
+)
 }
 \arguments{
-\item{dates}{Date range (character vector of length 2)}
+\item{dates}{Date range (character vector of length 1 or 2)}
 
 \item{level}{Spatial level ("dist", "muni", "lua")}
 
 \item{time_window}{Hour range (e.g. c(7,9))}
+
+\item{aggregate_by}{Aggregation level: "none", "daily", "hourly" (default: "none")}
 }
 \value{
 Data frame with mobility data
