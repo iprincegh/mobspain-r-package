@@ -49,6 +49,34 @@ install.packages(c("digest", "viridis", "parallel"))
 ```r
 library(mobspain)
 
+# Load sample data
+data(sample_zones)
+print(sample_zones)
+
+# For a complete working example, see:
+# - simple_mobspain_example.R (basic functionality)
+# - mobspain_example.R (comprehensive demonstration)
+```
+
+### Running the Examples
+The package includes two example scripts to help you get started:
+
+1. **Simple Example** (`simple_mobspain_example.R`):
+   ```r
+   source("simple_mobspain_example.R")
+   ```
+   - Demonstrates basic package functionality
+   - Works with sample data included in the package
+   - Perfect for first-time users
+
+2. **Comprehensive Example** (`mobspain_example.R`):
+   ```r
+   source("mobspain_example.R")
+   ```
+   - Shows all package functions
+   - Includes error handling examples
+   - Demonstrates expected behavior without external data connections
+
 # Configure package (optional)
 configure_mobspain(parallel = TRUE, n_cores = 4)
 
