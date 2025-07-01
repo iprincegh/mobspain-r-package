@@ -7,34 +7,181 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r setup}
-library(mobspain)
-init_data_dir("~/spanish_mobility_data")
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = FALSE  # Prevent actual data downloads during package build
+)
 ```
 
-## Analyzing Madrid Commute Patterns
-```{r madrid_commute}
-# Get districts
-districts <- get_spatial_zones("dist") %>%
-  filter(grepl("Madrid", name))
+```{r library}
+library(mobspain)
+```
+
+## Introduction
+
+The `mobspain` package provides a comprehensive toolkit for analyzing Spanish mobility patterns using MITMA (Ministry of Transport, Mobility and Urban Agenda) data. This vignette demonstrates the main functionality.
+
+## Setup
+
+First, initialize a data directory for storing MITMA data:
+
+```{r setup_data}
+# Set up data directory
+init_data_dir("~/spanish_mobility_data")
+
+# Check package status
+mobspain_status()
+```
+
+## Working with Sample Data
+
+The package includes sample data for testing and learning:
+
+```{r sample_data}
+# Load sample zones
+data(sample_zones)
+print(sample_zones)
+
+# Create spatial index
+zone_index <- create_zone_index(sample_zones)
+```
+
+## Real Data Analysis
+
+### Getting Spatial Zones
+
+Download real Spanish administrative zones:
+
+```{r spatial_zones}
+# Get districts (around 3,909 zones)
+districts <- get_spatial_zones("dist")
+
+# Get municipalities
+municipalities <- get_spatial_zones("muni")
+```
+
+### Mobility Data Retrieval
+
+Get real mobility matrices from MITMA:
+
+```{r mobility_data}
+# Get mobility data for a week
+mobility_data <- get_mobility_matrix(
+  dates = c("2023-01-01", "2023-01-07"),
+  level = "dist"
+)
 
 # Get morning commute data
 commute_data <- get_mobility_matrix(
-  dates = c("2023-03-01", "2023-03-07"),
+  dates = c("2023-03-01", "2023-03-07"), 
   level = "dist",
-  time_window = c(7, 9)
-) %>%
-  filter(id_origin %in% districts$id, 
-         id_destination %in% districts$id)
-
-# Calculate containment
-containment <- calculate_containment(commute_data)
-head(containment)
-
-# Visualize
-plot_daily_mobility(commute_data)
-create_flow_map(
-  commute_data %>% group_by(id_origin, id_destination) %>% summarise(n_trips = sum(n_trips)),
-  districts
+  time_window = c(7, 9)  # 7-9 AM
 )
 ```
+
+## Analytics
+
+### Containment Analysis
+
+Calculate self-containment indices:
+
+```{r containment}
+containment <- calculate_containment(mobility_data)
+head(containment[order(-containment$containment), ])
+```
+
+### Advanced Mobility Indicators
+
+Compute comprehensive mobility metrics:
+
+```{r indicators}
+indicators <- calculate_mobility_indicators(mobility_data, districts)
+print(indicators)
+```
+
+### Anomaly Detection
+
+Detect unusual mobility patterns:
+
+```{r anomalies}
+anomalies <- detect_mobility_anomalies(mobility_data, method = "zscore")
+```
+
+### Distance-Decay Modeling
+
+Model the relationship between distance and mobility flows:
+
+```{r distance_decay}
+decay_model <- calculate_distance_decay(mobility_data, districts)
+```
+
+## Visualization
+
+### Time Series Plots
+
+Visualize mobility trends over time:
+
+```{r daily_mobility}
+daily_plot <- plot_daily_mobility(mobility_data)
+print(daily_plot)
+```
+
+### Interactive Flow Maps
+
+Create interactive maps of mobility flows:
+
+```{r flow_maps}
+# Create flow map with minimum flow threshold
+flow_map <- create_flow_map(districts, mobility_data, min_flow = 500)
+flow_map
+```
+
+### Choropleth Maps
+
+Create maps showing spatial indicators:
+
+```{r choropleth}
+choropleth <- create_choropleth_map(
+  districts, 
+  indicators, 
+  variable = "containment",
+  title = "Self-Containment by District"
+)
+choropleth
+```
+
+### Heatmaps
+
+Create flow matrix heatmaps:
+
+```{r heatmaps}
+heatmap <- plot_mobility_heatmap(mobility_data, top_n = 20)
+print(heatmap)
+```
+
+### Distance-Decay Plots
+
+Visualize distance-decay relationships:
+
+```{r distance_plots}
+decay_plot <- plot_distance_decay(decay_model)
+print(decay_plot)
+```
+
+## Configuration
+
+The package supports advanced configuration:
+
+```{r config}
+# Enable parallel processing
+configure_mobspain(parallel = TRUE, n_cores = 4)
+
+# Check configuration
+mobspain_status()
+```
+
+## Conclusion
+
+The `mobspain` package provides a complete toolkit for Spanish mobility analysis, from data retrieval to advanced analytics and visualization. For more information, see the package documentation and example scripts.
