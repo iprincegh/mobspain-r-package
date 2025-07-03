@@ -1,6 +1,5 @@
 # mobspain: Spanish Mobility Data Analysis Toolkit
 
-[![R-CMD-check](https://github.com/iprincegh/mobspain-r-package/workflows/R-CMD-check/badge.svg)](https://github.com/iprincegh/mobspain-r-package/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A comprehensive R package for analyzing Spanish mobility patterns using MITMA (Ministry of Transport, Mobility and Urban Agenda) data. Built on `spanishoddata` with enhanced analytics, visualization, and performance features.
