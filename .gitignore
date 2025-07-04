@@ -43,3 +43,4 @@ cache/
 *.swo
 /doc/
 /Meta/
+*.tar.gz
