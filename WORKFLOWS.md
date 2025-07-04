@@ -1,6 +1,6 @@
-# Comprehensive Workflow Examples for mobspain
+# Workflow Examples
 
-This document provides complete, practical examples of how to use the mobspain package functions for different analysis scenarios.
+Complete, practical examples of how to use the mobspain package functions for different analysis scenarios.
 
 ## Table of Contents
 

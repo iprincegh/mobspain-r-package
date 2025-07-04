@@ -1,8 +1,8 @@
-# File Merger Summary: comprehensive_viz.R → visualization.R
+# File Merger Summary
 
-## 📁 **File Consolidation Completed Successfully**
+## File Consolidation Completed
 
-### **Before (2 separate files):**
+### Before (2 separate files):
 - **`visualization.R`** - 7 individual visualization functions (289 lines)
 - **`comprehensive_viz.R`** - 4 workflow and utility functions (289 lines)
 

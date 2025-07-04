@@ -1,6 +1,6 @@
-# mobspain: Open Source Features & Token-Free Design
+# Open Source Features
 
-## 🌟 Complete Token-Free Architecture
+## Complete Token-Free Architecture
 
 The `mobspain` package is designed to be completely **open and accessible** without requiring any API tokens, paid services, or external credentials. This makes it perfect for researchers, students, and organizations who need reliable mobility analysis tools.
 

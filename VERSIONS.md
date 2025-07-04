@@ -1,6 +1,6 @@
-# Data Version Selection Implementation Summary
+# Data Version Selection
 
-## 🎯 **Feature Overview**
+## Overview
 
 Successfully implemented **dual data version support** for the mobspain package, allowing users to choose between:
 
