@@ -80,8 +80,7 @@ get_mobility_matrix <- function(dates = NULL, level = "dist", time_window = NULL
     result <- spanishoddata::spod_get(
       type = "od",
       zones = level,
-      dates = dates,
-      version = version  # Use the specified version
+      dates = dates
     )
     
     # Ensure we return a proper data.frame
@@ -123,12 +122,11 @@ get_mobility_matrix <- function(dates = NULL, level = "dist", time_window = NULL
     DBI::dbDisconnect(con)
     message("Database query failed, falling back to CSV access: ", e$message)
     
-    # Fallback to CSV access with version
+    # Fallback to CSV access (version is set globally via init_data_dir)
     csv_result <- spanishoddata::spod_get(
       type = "od",
       zones = level,
-      dates = dates,
-      version = version  # Use the specified version
+      dates = dates
     )
     
     return(csv_result %>%

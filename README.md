@@ -49,53 +49,104 @@ init_data_dir(version = 1)  # COVID-19 studies
 
 ### Data Access
 ```r
-# Initialize data directory
-init_data_dir(version = 2)
+# Initialize data directory with version options
+init_data_dir(
+  path = "~/spanish_mobility_data",  # Custom path
+  version = 2                        # 1 (2020-2021) or 2 (2022+)
+)
 
-# Get spatial zones
+# Get spatial zones - level options: "dist", "muni", "ccaa"
 zones <- get_spatial_zones("dist")  # Districts (~3,909)
 zones <- get_spatial_zones("muni")  # Municipalities (~8,131)
+zones <- get_spatial_zones("ccaa")  # Autonomous communities (~17)
 
-# Get mobility data
+# Get mobility data with parameters
 mobility <- get_mobility_matrix(
-  dates = c("2023-01-01", "2023-01-07"),
-  level = "dist"
+  dates = c("2023-01-01", "2023-01-07"),  # Date range
+  level = "dist",                          # "dist", "muni", "ccaa"
+  time_range = c(6, 10),                   # Hour range (optional)
+  filter_weekends = FALSE                   # Include/exclude weekends
 )
 ```
 
 ### Analytics
 ```r
 # Self-containment analysis
-containment <- calculate_containment(mobility)
+containment <- calculate_containment(
+  mobility,
+  min_trips = 10        # Minimum trips threshold
+)
+# Access results: containment$containment, containment$total_trips
 head(containment[order(-containment$containment), ])
 
-# Anomaly detection
-anomalies <- detect_mobility_anomalies(mobility, method = "zscore")
+# Anomaly detection with method options
+anomalies <- detect_mobility_anomalies(
+  mobility, 
+  method = "zscore",     # "zscore", "iqr", "isolation"
+  threshold = 2.5,       # Z-score threshold
+  by_weekday = TRUE      # Separate analysis by weekday
+)
+# Access results: anomalies$anomaly_score, anomalies$is_anomaly
 plot(anomalies$anomaly_score)
 
-# Mobility indicators
-indicators <- calculate_mobility_indicators(mobility, zones)
+# Mobility indicators with custom parameters
+indicators <- calculate_mobility_indicators(
+  mobility, 
+  zones,
+  include_distance = TRUE,    # Include distance calculations
+  normalize = TRUE            # Normalize by population
+)
+# Results: indicators$total_inflow, indicators$total_outflow, indicators$containment
 summary(indicators)
 
 # Distance decay modeling
-decay <- calculate_distance_decay(mobility, zones)
+decay <- calculate_distance_decay(
+  mobility, 
+  zones,
+  max_distance = 500,    # Maximum distance in km
+  bin_size = 25          # Distance bins in km
+)
+# Access results: decay$r_squared, decay$coefficients, decay$model
 cat("Distance decay R²:", decay$r_squared)
 ```
 
 ### Visualization
 ```r
-# Interactive flow map
-flow_map <- create_flow_map(zones, mobility, min_flow = 500)
+# Interactive flow map with styling options
+flow_map <- create_flow_map(
+  zones, 
+  mobility, 
+  min_flow = 500,              # Minimum flow to display
+  line_color = "blue",         # Flow line color
+  line_width_scale = 1.5,      # Line width scaling
+  background_map = "cartodb"   # "osm", "cartodb", "stamen"
+)
 flow_map
 
-# Daily mobility trends
-plot_daily_mobility(mobility)
+# Daily mobility trends with grouping
+plot_daily_mobility(
+  mobility,
+  group_by = "weekday",        # "weekday", "date", "none"
+  smooth = TRUE,               # Add trend line
+  color_by = "day_type"        # Color by weekend/weekday
+)
 
-# Choropleth map
-create_choropleth_map(zones, indicators, variable = "containment")
+# Choropleth map with variable options
+create_choropleth_map(
+  zones, 
+  indicators, 
+  variable = "containment",     # Column name to visualize
+  color_palette = "viridis",    # "viridis", "plasma", "blues"
+  legend_title = "Self-containment %"
+)
 
-# Mobility heatmap
-plot_mobility_heatmap(mobility)
+# Mobility heatmap with time options
+plot_mobility_heatmap(
+  mobility,
+  time_unit = "hour",          # "hour", "day", "week"
+  cluster_rows = TRUE,         # Cluster similar patterns
+  color_scale = "log10"        # "linear", "log10", "sqrt"
+)
 ```
 
 ## Complete Example
@@ -136,25 +187,44 @@ choropleth <- create_choropleth_map(zones, containment, variable = "containment"
 ## Configuration
 
 ```r
-# Package setup
+# Package setup with all options
 configure_mobspain(
-  parallel = TRUE,
-  n_cores = 4,
-  cache_enabled = TRUE,
-  cache_max_size = 1000  # MB
+  parallel = TRUE,              # Enable parallel processing
+  n_cores = 4,                  # Number of cores (default: detectCores()-1)
+  cache_enabled = TRUE,         # Enable caching
+  cache_max_size = 1000,        # Cache size in MB
+  cache_max_age_days = 7,       # Cache expiration in days
+  data_source = "csv",          # "csv" or "duckdb"
+  validate_data = TRUE          # Validate data on load
 )
 
-# Check status
-mobspain_status()
+# Check current configuration
+status <- mobspain_status()
+# Access: status$parallel, status$cache_size, status$data_dir
 
-# Get optimal parameters
-params <- get_optimal_parameters("exploratory", "medium")
+# Get optimal parameters for different scenarios
+params <- get_optimal_parameters(
+  analysis_type = "exploratory",  # "exploratory", "production", "research"
+  data_size = "medium"            # "small", "medium", "large"
+)
+# Returns: params$cache_size, params$parallel, params$batch_size
 ```
 
 ## Documentation
 
-- **Help**: `?mobspain`, `?get_mobility_matrix`
-- **Vignette**: `vignette("introduction", package = "mobspain")`
+- **Function Help**: `?function_name` - Get detailed parameter information
+  - `?get_mobility_matrix` - Data retrieval options
+  - `?calculate_containment` - Containment analysis parameters  
+  - `?create_flow_map` - Visualization styling options
+  - `?detect_mobility_anomalies` - Anomaly detection methods
+- **Package Overview**: `?mobspain` - Main package documentation
+- **Vignette**: `vignette("introduction", package = "mobspain")` - Complete tutorial
 - **GitHub**: https://github.com/iprincegh/mobspain-r-package
+
+**Common Parameter Values:**
+- **Levels**: `"dist"` (districts), `"muni"` (municipalities), `"ccaa"` (regions)
+- **Methods**: `"zscore"`, `"iqr"`, `"isolation"` (anomaly detection)
+- **Color Palettes**: `"viridis"`, `"plasma"`, `"blues"`, `"reds"`
+- **Background Maps**: `"osm"`, `"cartodb"`, `"stamen"`
 
 Built on [spanishoddata](https://github.com/rOpenSpain/spanishoddata). MIT License.
