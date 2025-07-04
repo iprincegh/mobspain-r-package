@@ -3,12 +3,48 @@
 #' Sets up storage for MITMA data and configures spanishoddata
 #'
 #' @param path Path to store MITMA data (default: ~/spanish_mobility_data)
+#' @param version Data version to use: 1 (2020-2021) or 2 (2022 onwards, default)
 #' @export
-init_data_dir <- function(path = "~/spanish_mobility_data") {
+#' @details
+#' The Spanish mobility data comes in two versions:
+#' \itemize{
+#'   \item \strong{Version 1 (2020-2021):} COVID-19 pandemic period data with trip numbers 
+#'         and distances by origin, destination, activity, residence province, time, and date.
+#'   \item \strong{Version 2 (2022 onwards):} Enhanced data with improved spatial resolution,
+#'         trips to/from Portugal and France, and sociodemographic factors (income, age, sex).
+#' }
+#' @examples
+#' \dontrun{
+#' # Use default version 2 (2022 onwards - recommended)
+#' init_data_dir()
+#' 
+#' # Use version 1 (2020-2021 COVID period)
+#' init_data_dir(version = 1)
+#' 
+#' # Specify custom path and version
+#' init_data_dir("~/my_mobility_data", version = 2)
+#' }
+init_data_dir <- function(path = "~/spanish_mobility_data", version = 2) {
+  # Validate version
+  if (!version %in% c(1, 2)) {
+    stop("version must be 1 (2020-2021) or 2 (2022 onwards)", call. = FALSE)
+  }
+  
   if(!dir.exists(path)) dir.create(path, recursive = TRUE)
   spanishoddata::spod_set_data_dir(path)
   options(mobspain.data_dir = path)
+  options(mobspain.data_version = version)
+  
+  # Provide informative message about the chosen version
+  version_info <- if(version == 1) {
+    "Version 1 (2020-2021): COVID-19 pandemic period data"
+  } else {
+    "Version 2 (2022 onwards): Enhanced data with sociodemographic factors (recommended)"
+  }
+  
   message("Data directory set to: ", normalizePath(path))
+  message("Using data ", version_info)
+  message("For version details, see: ?init_data_dir or get_data_version_info()")
 }
 
 #' Connect to mobility database
@@ -74,4 +110,97 @@ standardize_od_columns <- function(od_data) {
   }
   
   return(result)
+}
+
+#' Get information about Spanish mobility data versions
+#'
+#' @return List with detailed information about both data versions
+#' @export
+#' @examples
+#' # Get comprehensive version information
+#' version_info <- get_data_version_info()
+#' version_info$comparison
+get_data_version_info <- function() {
+  list(
+    version_1 = list(
+      period = "2020-2021",
+      description = "COVID-19 pandemic period data",
+      characteristics = c(
+        "Trip numbers and distances by origin-destination",
+        "Activity and residence province breakdown", 
+        "Time interval and distance interval data",
+        "Individual counts by location and trip frequency",
+        "Focus on COVID-19 mobility changes"
+      ),
+      spatial_resolution = "Municipality and district level",
+      temporal_resolution = "Daily and hourly",
+      countries = "Spain only",
+      use_cases = c(
+        "COVID-19 mobility analysis",
+        "Pandemic impact studies", 
+        "Historical mobility comparison",
+        "Emergency response planning"
+      )
+    ),
+    version_2 = list(
+      period = "2022 onwards", 
+      description = "Enhanced mobility data with sociodemographic factors",
+      characteristics = c(
+        "Improved spatial resolution",
+        "Trips to and from Portugal and France",
+        "Sociodemographic factors: income, age, sex",
+        "Study-related activities information",
+        "Individual counts by overnight stay location",
+        "Residence and date breakdown"
+      ),
+      spatial_resolution = "Enhanced municipality and district level",
+      temporal_resolution = "Daily and hourly",
+      countries = "Spain, Portugal, France",
+      use_cases = c(
+        "Current mobility analysis (recommended)",
+        "Cross-border mobility studies",
+        "Sociodemographic mobility patterns",
+        "Urban planning and policy",
+        "Transportation demand modeling"
+      )
+    ),
+    comparison = data.frame(
+      Feature = c(
+        "Time Period", "Spatial Resolution", "Countries Covered", 
+        "Sociodemographic Data", "Cross-border Trips", "Use Case",
+        "Data Quality", "Recommendation"
+      ),
+      `Version 1 (2020-2021)` = c(
+        "2020-2021 (COVID period)", "Standard", "Spain only",
+        "Limited", "No", "Historical/COVID analysis", 
+        "Good", "For COVID studies"
+      ),
+      `Version 2 (2022+)` = c(
+        "2022 onwards (current)", "Enhanced", "Spain + Portugal + France",
+        "Income, age, sex", "Yes", "Current analysis",
+        "Enhanced", "Recommended for new projects"
+      ),
+      stringsAsFactors = FALSE
+    ),
+    current_version = getOption("mobspain.data_version", 2),
+    recommendations = list(
+      general = "Use Version 2 for new projects (enhanced data quality and features)",
+      covid_studies = "Use Version 1 for COVID-19 specific analysis", 
+      cross_border = "Use Version 2 for Spain-Portugal-France mobility studies",
+      sociodemographic = "Use Version 2 for income/age/sex analysis"
+    )
+  )
+}
+
+#' Get current data version
+#' 
+#' @return Current data version (1 or 2)
+#' @export
+get_current_data_version <- function() {
+  version <- getOption("mobspain.data_version", 2)
+  if (is.null(version)) {
+    message("No data version set. Run init_data_dir() first. Using default version 2.")
+    return(2)
+  }
+  return(version)
 }

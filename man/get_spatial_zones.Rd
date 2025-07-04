@@ -4,16 +4,36 @@
 \alias{get_spatial_zones}
 \title{Get spatial zones with parsed metadata}
 \usage{
-get_spatial_zones(level = "dist", version = 2)
+get_spatial_zones(level = "dist", version = NULL)
 }
 \arguments{
-\item{level}{One of: "dist", "muni", "lua"}
+\item{level}{Spatial level: "dist" (districts), "muni" (municipalities), "lua" (large urban areas)}
 
-\item{version}{Data version (default: 2)}
+\item{version}{Data version: 1 (2020-2021) or 2 (2022 onwards, default)}
 }
 \value{
-sf object
+sf object with spatial zones
 }
 \description{
 Get spatial zones with parsed metadata
+}
+\details{
+Downloads Spanish administrative boundaries from the MITMA dataset.
+The version parameter determines which dataset version to use:
+\itemize{
+\item \strong{Version 1 (2020-2021):} COVID-19 period boundaries
+\item \strong{Version 2 (2022 onwards):} Enhanced boundaries with better resolution
+}
+}
+\examples{
+\dontrun{
+# Get districts using default version 2
+districts <- get_spatial_zones("dist")
+
+# Get municipalities using version 1 (COVID period)
+municipalities <- get_spatial_zones("muni", version = 1)
+
+# Get large urban areas using version 2
+urban_areas <- get_spatial_zones("lua", version = 2)
+}
 }

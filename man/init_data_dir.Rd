@@ -4,11 +4,34 @@
 \alias{init_data_dir}
 \title{Initialize data directory for MITMA data}
 \usage{
-init_data_dir(path = "~/spanish_mobility_data")
+init_data_dir(path = "~/spanish_mobility_data", version = 2)
 }
 \arguments{
 \item{path}{Path to store MITMA data (default: ~/spanish_mobility_data)}
+
+\item{version}{Data version to use: 1 (2020-2021) or 2 (2022 onwards, default)}
 }
 \description{
 Sets up storage for MITMA data and configures spanishoddata
+}
+\details{
+The Spanish mobility data comes in two versions:
+\itemize{
+\item \strong{Version 1 (2020-2021):} COVID-19 pandemic period data with trip numbers
+and distances by origin, destination, activity, residence province, time, and date.
+\item \strong{Version 2 (2022 onwards):} Enhanced data with improved spatial resolution,
+trips to/from Portugal and France, and sociodemographic factors (income, age, sex).
+}
+}
+\examples{
+\dontrun{
+# Use default version 2 (2022 onwards - recommended)
+init_data_dir()
+
+# Use version 1 (2020-2021 COVID period)
+init_data_dir(version = 1)
+
+# Specify custom path and version
+init_data_dir("~/my_mobility_data", version = 2)
+}
 }

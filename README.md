@@ -20,11 +20,33 @@ A comprehensive R package for analyzing Spanish mobility patterns using MITMA (M
 ## ✨ Key Features
 
 - **Data Access**: Real Spanish mobility data from MITMA (~3,909 districts, ~8,131 municipalities)
+- **Dual Data Versions**: Version 1 (2020-2021 COVID) and Version 2 (2022+ enhanced data)
 - **Advanced Analytics**: Containment analysis, anomaly detection, distance-decay modeling, mobility indicators
 - **District Analysis**: Detailed analysis of specific districts with heatmaps and flow visualization
 - **Visualizations**: Interactive flow maps, choropleth maps, heatmaps, time series plots
 - **Production Ready**: 22+ tested functions with data validation and quality tools
 - **Smart Caching**: Automatic data management with configurable parallel processing
+
+## 📊 Data Versions
+
+The package supports **two versions** of Spanish mobility data:
+
+| Feature | Version 1 (2020-2021) | Version 2 (2022 onwards) |
+|---------|------------------------|---------------------------|
+| **Period** | COVID-19 pandemic | Current data (recommended) |
+| **Spatial Resolution** | Standard districts/municipalities | Enhanced resolution |
+| **Countries** | Spain only | Spain + Portugal + France |
+| **Sociodemographic** | Basic | Income, age, sex |
+| **Use Cases** | COVID impact studies | Current mobility analysis |
+
+```r
+# Choose your version based on research needs
+init_data_dir(version = 2)  # Recommended: Enhanced current data
+init_data_dir(version = 1)  # For COVID-19 studies
+
+# Get version information
+get_data_version_info()$comparison
+```
 
 ## 📦 Installation
 
@@ -41,24 +63,37 @@ devtools::install_github("iprincegh/mobspain-r-package")
 ```r
 library(mobspain)
 
-# Setup
-init_data_dir()
+# Setup with data version selection
+init_data_dir(version = 2)  # Version 2 (2022+, recommended) or 1 (2020-2021 COVID)
 data(sample_zones)
 
-# Get real Spanish zones and mobility data
-zones <- get_spatial_zones("dist")  # ~3,909 districts
-mobility <- get_mobility_matrix(dates = c("2023-01-01", "2023-01-07"))
+# Get Spanish zones and mobility data with version control
+zones <- get_spatial_zones("dist", version = 2)  # ~3,909 districts
+mobility <- get_mobility_matrix(
+  dates = c("2023-01-01", "2023-01-07"),
+  version = 2  # Enhanced data with sociodemographic factors
+)
 
-# Analytics
+# Compare with COVID-period data
+covid_mobility <- get_mobility_matrix(
+  dates = c("2020-03-15", "2020-03-21"),
+  version = 1  # COVID-19 pandemic period data
+)
+
+# Get detailed version information
+version_info <- get_data_version_info()
+print(version_info$comparison)
+
+# Analytics with version-aware data
 containment <- calculate_containment(mobility)
 anomalies <- detect_mobility_anomalies(mobility, by_weekday = TRUE)
 indicators <- calculate_mobility_indicators(mobility, zones)
 
-# Visualizations
+# Visualizations (completely token-free)
 flow_map <- create_flow_map(zones, mobility, min_flow = 500)
 daily_plot <- plot_daily_mobility(mobility)
 
-# District-specific analysis (NEW!)
+# District-specific analysis
 madrid_analysis <- analyze_district_mobility(
   district_id = "28079", 
   dates = c("2023-01-01", "2023-01-07"),

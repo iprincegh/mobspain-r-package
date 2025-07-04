@@ -2,27 +2,57 @@
 % Please edit documentation in R/mobility_analysis.R
 \name{get_mobility_matrix}
 \alias{get_mobility_matrix}
-\title{Get mobility matrix}
+\title{Get mobility matrix from Spanish MITMA data}
 \usage{
 get_mobility_matrix(
   dates = NULL,
   level = "dist",
   time_window = NULL,
-  aggregate_by = "none"
+  aggregate_by = "none",
+  version = NULL
 )
 }
 \arguments{
 \item{dates}{Date range (character vector of length 1 or 2). Default: last 7 days}
 
-\item{level}{Spatial level ("dist", "muni", "lua")}
+\item{level}{Spatial level: "dist" (districts), "muni" (municipalities), "lua" (large urban areas)}
 
-\item{time_window}{Hour range (e.g. c(7,9))}
+\item{time_window}{Hour range for filtering (e.g. c(7,9) for 7-9 AM)}
 
 \item{aggregate_by}{Aggregation level: "none", "daily", "hourly" (default: "none")}
+
+\item{version}{Data version: 1 (2020-2021) or 2 (2022 onwards, default)}
 }
 \value{
 Data frame with mobility data
 }
 \description{
-Get mobility matrix
+Get mobility matrix from Spanish MITMA data
+}
+\details{
+Downloads Spanish origin-destination mobility data from MITMA. The version parameter
+determines which dataset to use:
+\itemize{
+\item \strong{Version 1 (2020-2021):} COVID-19 period data with basic trip information
+\item \strong{Version 2 (2022 onwards):} Enhanced data with sociodemographic factors
+}
+}
+\examples{
+\dontrun{
+# Get mobility data using default version 2
+mobility <- get_mobility_matrix(dates = c("2023-01-01", "2023-01-07"))
+
+# Get COVID-period data (version 1)
+covid_mobility <- get_mobility_matrix(
+  dates = c("2020-03-01", "2020-03-07"), 
+  version = 1
+)
+
+# Get morning rush hour data
+morning_rush <- get_mobility_matrix(
+  dates = c("2023-01-01", "2023-01-07"),
+  time_window = c(7, 9),
+  version = 2
+)
+}
 }

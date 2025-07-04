@@ -1,18 +1,61 @@
-#' Get mobility matrix
+#' Get mobility matrix from Spanish MITMA data
 #'
 #' @param dates Date range (character vector of length 1 or 2). Default: last 7 days
-#' @param level Spatial level ("dist", "muni", "lua")
-#' @param time_window Hour range (e.g. c(7,9))
+#' @param level Spatial level: "dist" (districts), "muni" (municipalities), "lua" (large urban areas)
+#' @param time_window Hour range for filtering (e.g. c(7,9) for 7-9 AM)
 #' @param aggregate_by Aggregation level: "none", "daily", "hourly" (default: "none")
+#' @param version Data version: 1 (2020-2021) or 2 (2022 onwards, default)
 #' @return Data frame with mobility data
 #' @export
-get_mobility_matrix <- function(dates = NULL, level = "dist", time_window = NULL, aggregate_by = "none") {
+#' @details
+#' Downloads Spanish origin-destination mobility data from MITMA. The version parameter
+#' determines which dataset to use:
+#' \itemize{
+#'   \item \strong{Version 1 (2020-2021):} COVID-19 period data with basic trip information
+#'   \item \strong{Version 2 (2022 onwards):} Enhanced data with sociodemographic factors
+#' }
+#' @examples
+#' \dontrun{
+#' # Get mobility data using default version 2
+#' mobility <- get_mobility_matrix(dates = c("2023-01-01", "2023-01-07"))
+#' 
+#' # Get COVID-period data (version 1)
+#' covid_mobility <- get_mobility_matrix(
+#'   dates = c("2020-03-01", "2020-03-07"), 
+#'   version = 1
+#' )
+#' 
+#' # Get morning rush hour data
+#' morning_rush <- get_mobility_matrix(
+#'   dates = c("2023-01-01", "2023-01-07"),
+#'   time_window = c(7, 9),
+#'   version = 2
+#' )
+#' }
+get_mobility_matrix <- function(dates = NULL, level = "dist", time_window = NULL, 
+                               aggregate_by = "none", version = NULL) {
+  # Use configured version if not specified
+  if (is.null(version)) {
+    version <- getOption("mobspain.data_version", 2)
+  }
+  
+  # Validate version
+  if (!version %in% c(1, 2)) {
+    stop("version must be 1 (2020-2021) or 2 (2022 onwards)", call. = FALSE)
+  }
+  
   # Set default dates if not provided
   if(is.null(dates)) {
-    # Use a valid date range from the dataset
-    dates <- c("2023-01-01", "2023-01-07")
-    message("Using default date range: ", dates[1], " to ", dates[2])
+    # Use appropriate default dates based on version
+    if (version == 1) {
+      dates <- c("2020-03-01", "2020-03-07")  # COVID period
+      message("Using default COVID-period dates (version 1): ", dates[1], " to ", dates[2])
+    } else {
+      dates <- c("2023-01-01", "2023-01-07")  # Recent data
+      message("Using default recent dates (version 2): ", dates[1], " to ", dates[2])
+    }
   }
+  
   # Enhanced input validation
   dates <- validate_dates(dates)
   level <- validate_level(level)
@@ -21,6 +64,9 @@ get_mobility_matrix <- function(dates = NULL, level = "dist", time_window = NULL
   if(!aggregate_by %in% c("none", "daily", "hourly")) {
     stop("aggregate_by must be one of: 'none', 'daily', 'hourly'", call. = FALSE)
   }
+  
+  message("Downloading mobility data (level: ", level, ", version: ", version, ")...")
+  
   # Try to connect to DuckDB
   con <- tryCatch({
     connect_mobility_db()
@@ -34,22 +80,23 @@ get_mobility_matrix <- function(dates = NULL, level = "dist", time_window = NULL
     result <- spanishoddata::spod_get(
       type = "od",
       zones = level,
-      dates = dates
+      dates = dates,
+      version = version  # Use the specified version
     )
     
     # Ensure we return a proper data.frame
     return(
       result %>%
         dplyr::mutate(
-          date = as.Date(date),
-          weekday = lubridate::wday(date, label = TRUE)
+          date = as.Date(.data$date),
+          weekday = lubridate::wday(.data$date, label = TRUE)
         ) %>%
         as.data.frame()
     )
   }
 
-  # Proceed with DuckDB query
-  table <- paste0("v2_od_", level)
+  # Proceed with DuckDB query (using version-specific table)
+  table <- paste0("v", version, "_od_", level)
 
   query <- glue::glue_sql(
     "SELECT date, hour, id_origin, id_destination, n_trips
@@ -76,17 +123,18 @@ get_mobility_matrix <- function(dates = NULL, level = "dist", time_window = NULL
     DBI::dbDisconnect(con)
     message("Database query failed, falling back to CSV access: ", e$message)
     
-    # Fallback to CSV access
+    # Fallback to CSV access with version
     csv_result <- spanishoddata::spod_get(
       type = "od",
       zones = level,
-      dates = dates
+      dates = dates,
+      version = version  # Use the specified version
     )
     
     return(csv_result %>%
       dplyr::mutate(
-        date = as.Date(date),
-        weekday = lubridate::wday(date, label = TRUE)
+        date = as.Date(.data$date),
+        weekday = lubridate::wday(.data$date, label = TRUE)
       ) %>%
       as.data.frame())
   })
