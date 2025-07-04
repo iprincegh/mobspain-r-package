@@ -43,15 +43,18 @@ plot_daily_mobility <- function(od_data) {
     daily <- od_data %>%
       dplyr::mutate(weekday = lubridate::wday(.data$date, label = TRUE)) %>%
       dplyr::group_by(.data$date, .data$weekday) %>%
-      dplyr::summarise(total_trips = sum(.data$n_trips), .groups = "drop")
+      dplyr::summarise(total_trips = sum(.data$n_trips, na.rm = TRUE), .groups = "drop")
   }
 
-  ggplot2::ggplot(daily, ggplot2::aes(x = .data$date, y = .data$total_trips, color = .data$weekday)) +
-    ggplot2::geom_line() +
+  ggplot2::ggplot(daily, ggplot2::aes(x = .data$date, y = .data$total_trips)) +
+    ggplot2::geom_line(ggplot2::aes(group = 1), color = "blue", size = 1) +
+    ggplot2::geom_point(ggplot2::aes(color = .data$weekday), size = 2) +
     ggplot2::labs(title = "Daily Mobility Patterns",
                   x = "Date", y = "Total Trips",
                   color = "Day of Week") +
-    ggplot2::theme_minimal()
+    ggplot2::theme_minimal() +
+    ggplot2::scale_x_date(date_labels = "%b %d", date_breaks = "1 day") +
+    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1))
 }
 
 #' Create flow map
@@ -92,17 +95,24 @@ create_flow_map <- function(zones, od_data, min_flow = 100, map_style = "osm", i
     stop("zones must be an sf object", call. = FALSE)
   }
   
+  # Transform to WGS84 if needed
+  if(sf::st_crs(zones) != sf::st_crs(4326)) {
+    zones <- sf::st_transform(zones, 4326)
+  }
+  
   # Extract centroids safely
   centroids <- tryCatch({
-    zones_centroids <- sf::st_centroid(zones)
-    coords <- sf::st_coordinates(zones_centroids)
-    
-    data.frame(
-      id = zones$id,
-      lon = coords[,1],
-      lat = coords[,2],
-      stringsAsFactors = FALSE
-    )
+    suppressWarnings({
+      zones_centroids <- sf::st_centroid(zones)
+      coords <- sf::st_coordinates(zones_centroids)
+      
+      data.frame(
+        id = zones$id,
+        lon = coords[,1],
+        lat = coords[,2],
+        stringsAsFactors = FALSE
+      )
+    })
   }, error = function(e) {
     # Fallback: use geometry coordinates directly if available
     if("geometry" %in% names(zones)) {
