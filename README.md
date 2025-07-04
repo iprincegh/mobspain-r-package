@@ -149,6 +149,29 @@ plot_mobility_heatmap(
 )
 ```
 
+### Zone Plotting (sf Integration)
+```r
+# Zones are standard sf objects for flexible plotting
+library(sf)
+library(ggplot2)
+
+# Basic boundary plotting
+plot(st_geometry(zones), col = "lightblue")
+plot(zones["area_km2"], main = "Zone Areas")
+
+# ggplot2 integration
+ggplot(zones) +
+  geom_sf(aes(fill = area_km2)) +
+  scale_fill_viridis_c() +
+  theme_void()
+
+# Interactive maps
+library(leaflet)
+leaflet(zones[1:100, ]) %>%
+  addTiles() %>%
+  addPolygons(popup = ~name)
+```
+
 ## Complete Example
 
 ```r
