@@ -26,7 +26,7 @@ for(i in seq_along(mobility_cols)) {
 if(length(mobility_cols) %% 3 != 0) cat("\n")
 
 cat("\nKey columns explained:\n")
-cat("• date, hour, time_slot     - Temporal dimensions\n")
+cat("• date, hour               - Temporal dimensions\n")
 cat("• id_origin, id_destination - Spatial flow pairs\n")
 cat("• n_trips                   - Number of trips (main flow measure)\n")
 cat("• trips_total_length_km     - Total distance traveled\n")
