@@ -95,9 +95,7 @@ Download Spanish administrative boundaries that correspond to MITMA data zones:
 # Get districts (finest spatial resolution) with specific parameters
 districts <- get_spatial_zones(
   level = "dist",              # Level options: "dist", "muni", "lua"
-  version = 2,                 # Data version: 1 (2020-2021) or 2 (2022+)
-  update = FALSE,              # Force update from server
-  cache = TRUE                 # Use cached data if available
+  version = 2                  # Data version: 1 (2020-2021) or 2 (2022+)
 )  # Results: ~3,909 zones
 
 # Get municipalities (standard administrative units)
@@ -126,16 +124,15 @@ head(districts[, c("id", "name", "area_km2")])
 Get real mobility matrices from MITMA. The data represents aggregated trips between spatial zones:
 
 ```{r mobility_data}
-# Get mobility data with comprehensive parameters
+# Get mobility data with available parameters
 mobility_data <- get_mobility_matrix(
   dates = c("2023-01-01", "2023-01-07"),  # Date range (YYYY-MM-DD format)
   level = "dist",                          # Spatial level: "dist", "muni", "lua"
-  version = 2,                             # Data version: 1 or 2
   time_window = NULL,                      # Time range: c(start_hour, end_hour), e.g., c(7, 9)
-  filter_weekends = FALSE,                 # Exclude weekends: TRUE/FALSE
-  validate = TRUE                          # Validate data quality: TRUE/FALSE
+  aggregate_by = "none",                   # Aggregation: "none", "date", "hour"
+  version = 2                              # Data version: 1 or 2
 )
-# Returns data.frame with columns: id_origin, id_destination, date, n_trips, distance_km
+# Returns data.frame with columns: id_origin, id_destination, date, n_trips
 
 # Get morning rush hour data (7-9 AM) for commuting analysis
 commute_data <- get_mobility_matrix(
@@ -181,17 +178,11 @@ print(head(mobility_data))
 print("Column types:")
 print(sapply(mobility_data, class))
 
-# Validate data quality with detailed parameters
-quality_report <- validate_mitma_data(
-  mobility_data,
-  min_trips = 1,                    # Minimum trip threshold
-  check_symmetry = TRUE,            # Check origin-destination symmetry
-  check_dates = TRUE,               # Validate date formats
-  verbose = TRUE                    # Print detailed validation info
-)
+# Validate data quality
+quality_report <- validate_mitma_data(mobility_data)
 print("Data quality summary:")
 print(quality_report)
-# Access results: quality_report$is_valid, quality_report$issues, quality_report$summary
+# Access results: quality_report contains validation statistics
 
 # Check for Spanish holidays with specific parameters
 holiday_check <- check_spanish_holidays(
@@ -585,13 +576,11 @@ print("Package configuration:")
 print(status)
 # Access specific settings: status$parallel, status$cache_enabled, status$data_dir
 
-# Cache management
-cache_info <- get_cache_info()
-print("Cache information:")
-print(cache_info)
-
-# Clean old cache files
-cleanup_cache(max_age_days = 30)
+# Note: Cache management functions may vary by implementation
+# Check available cache functions with: ls("package:mobspain")
+if(exists("cleanup_cache")) {
+  cleanup_cache(max_age_days = 30)
+}
 ```
 
 ## Conclusion
