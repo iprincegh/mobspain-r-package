@@ -12,6 +12,8 @@ get_cache_key <- function(dates, level, time_window = NULL) {
 }
 
 #' Check if cached data exists and is valid
+#' @param cache_key Character string identifying the cache file
+#' @return Cached data if valid, NULL otherwise
 check_cache <- function(cache_key) {
   cache_dir <- getOption("mobspain.cache_dir", tempdir())
   cache_file <- file.path(cache_dir, paste0(cache_key, ".rds"))
@@ -38,6 +40,9 @@ check_cache <- function(cache_key) {
 }
 
 #' Save data to cache
+#' @param data Data to cache
+#' @param cache_key Character string identifying the cache file
+#' @return TRUE if successful, FALSE otherwise
 save_to_cache <- function(data, cache_key) {
   cache_dir <- getOption("mobspain.cache_dir", tempdir())
   if(!dir.exists(cache_dir)) {
@@ -78,7 +83,7 @@ cleanup_cache <- function() {
     file_info <- file_info[order(file_info$mtime), ]
     
     cumulative_size <- 0
-    for(i in 1:nrow(file_info)) {
+    for(i in seq_len(nrow(file_info))) {
       cumulative_size <- cumulative_size + file_info$size[i] / 1024^2
       if(cumulative_size > max_size_mb * 0.8) {  # Keep 80% of max size
         unlink(file_info$path[1:i])

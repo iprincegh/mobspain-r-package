@@ -41,7 +41,7 @@ mobspain_status <- function() {
     cache_directory = cache_dir,
     cache_dir_exists = dir.exists(cache_dir),
     spanishoddata_version = tryCatch(
-      utils::packageVersion("spanishoddata"),
+      as.character(utils::packageVersion("spanishoddata")),
       error = function(e) "Not installed"
     ),
     duckdb_available = requireNamespace("duckdb", quietly = TRUE),

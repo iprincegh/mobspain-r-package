@@ -6,6 +6,12 @@
 \usage{
 check_cache(cache_key)
 }
+\arguments{
+\item{cache_key}{Character string identifying the cache file}
+}
+\value{
+Cached data if valid, NULL otherwise
+}
 \description{
 Check if cached data exists and is valid
 }

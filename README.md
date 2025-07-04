@@ -8,8 +8,9 @@ A comprehensive R package for analyzing Spanish mobility patterns using MITMA (M
 
 - **Data Access**: Real Spanish mobility data from MITMA (~3,909 districts, ~8,131 municipalities)
 - **Advanced Analytics**: Containment analysis, anomaly detection, distance-decay modeling, mobility indicators
+- **District Analysis**: Detailed analysis of specific districts with heatmaps and flow visualization
 - **Visualizations**: Interactive flow maps, choropleth maps, heatmaps, time series plots
-- **Production Ready**: 21 tested functions with data validation and quality tools
+- **Production Ready**: 22+ tested functions with data validation and quality tools
 - **Smart Caching**: Automatic data management with configurable parallel processing
 
 ## 📦 Installation
@@ -43,11 +44,21 @@ indicators <- calculate_mobility_indicators(mobility, zones)
 # Visualizations
 flow_map <- create_flow_map(zones, mobility, min_flow = 500)
 daily_plot <- plot_daily_mobility(mobility)
+
+# District-specific analysis (NEW!)
+madrid_analysis <- analyze_district_mobility(
+  district_id = "28079", 
+  dates = c("2023-01-01", "2023-01-07"),
+  time_range = c(7, 9),  # Morning rush hour
+  plot_type = "all"
+)
+madrid_analysis$heatmap
+madrid_analysis$flow_plot
 ```
 
 ## 📊 Functions Overview
 
-**21 Production-Ready Functions** ✅
+**22+ Production-Ready Functions** ✅
 
 ### Core Functions (10)
 | Function | Description |
@@ -61,12 +72,13 @@ daily_plot <- plot_daily_mobility(mobility)
 | `create_zone_index()` / `sample_zones` | Spatial utilities |
 | `standardize_od_columns()` | Data standardization |
 
-### Advanced Analytics (6)
+### Advanced Analytics (7)
 | Function | Description |
 |----------|-------------|
 | `calculate_mobility_indicators()` | Comprehensive mobility metrics |
 | `detect_mobility_anomalies()` | Statistical anomaly detection |
 | `calculate_distance_decay()` | Distance-decay modeling |
+| `analyze_district_mobility()` | **NEW!** District-specific analysis with heatmaps |
 | `validate_mitma_data()` | Data quality validation |
 | `check_spanish_holidays()` | Holiday detection |
 | `get_optimal_parameters()` | Parameter recommendations |

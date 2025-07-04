@@ -6,6 +6,14 @@
 \usage{
 save_to_cache(data, cache_key)
 }
+\arguments{
+\item{data}{Data to cache}
+
+\item{cache_key}{Character string identifying the cache file}
+}
+\value{
+TRUE if successful, FALSE otherwise
+}
 \description{
 Save data to cache
 }

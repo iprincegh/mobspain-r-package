@@ -41,3 +41,5 @@ cache/
 *~
 *.swp
 *.swo
+/doc/
+/Meta/

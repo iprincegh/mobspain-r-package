@@ -25,12 +25,12 @@ get_mobility_matrix <- function(dates = NULL, level = "dist", time_window = NULL
   con <- tryCatch({
     connect_mobility_db()
   }, error = function(e) {
-    message("Database connection failed: ", e$message)
+    message("Database connection failed, falling back to CSV access: ", e$message)
     return(NULL)
   })
 
   if(is.null(con)) {
-    message("Using direct CSV access")
+    message("Using direct CSV access (recommended for reliability)")
     result <- spanishoddata::spod_get(
       type = "od",
       zones = level,

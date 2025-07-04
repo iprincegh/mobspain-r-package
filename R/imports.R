@@ -16,5 +16,7 @@ globalVariables(c(
   "geometry", "sample_zones", "weekday", "date", "total_outflow",
   "total_inflow", "external_trips", "n_destinations", "net_flow",
   "connectivity_index", "area_km2", "trip_density", "internal_density",
-  "z_score", "is_anomaly", "distance_km", "hour"
+  "z_score", "is_anomaly", "distance_km", "hour", "flow_type",
+  "destination_name", "datetime", "name", "avg_outbound", "avg_inbound",
+  "avg_internal", "unique_destinations", "unique_origins", "connected_zone"
 ))

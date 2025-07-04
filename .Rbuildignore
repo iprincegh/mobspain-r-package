@@ -7,3 +7,5 @@
 ^\.gitignore$
 ^.*\.Rcheck$
 ^test_all_functions\.R$
+^doc$
+^Meta$

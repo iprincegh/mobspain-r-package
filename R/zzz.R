@@ -4,6 +4,7 @@
       "mobspain v", utils::packageVersion("mobspain"), " loaded.\n",
       "Use configure_mobspain() to set up caching and parallel processing.\n",
       "Use mobspain_status() to check package configuration.\n",
+      "Note: CSV access is used by default for reliability.\n",
       "For help getting started, run: ?mobspain or vignette('introduction', package = 'mobspain')"
     )
   )
