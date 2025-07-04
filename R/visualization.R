@@ -35,9 +35,11 @@ plot_daily_mobility <- function(od_data) {
 #' @param zones Spatial zones (sf object)
 #' @param od_data Aggregated OD data with columns: origin/id_origin, destination/id_destination, flow/n_trips
 #' @param min_flow Minimum flow to display (default: 100)
+#' @param map_style Map style for interactive maps: "osm", "carto", "stamen" (default: "osm")
+#' @param interactive Whether to create interactive (leaflet) or static (ggplot) map (default: TRUE)
 #' @return leaflet map or ggplot if leaflet fails
 #' @export
-create_flow_map <- function(zones, od_data, min_flow = 100) {
+create_flow_map <- function(zones, od_data, min_flow = 100, map_style = "osm", interactive = TRUE) {
   # Standardize column names
   od_data <- standardize_od_columns(od_data)
   
@@ -81,11 +83,33 @@ create_flow_map <- function(zones, od_data, min_flow = 100) {
     dplyr::rename(end_lon = .data$lon, end_lat = .data$lat) %>%
     dplyr::filter(!is.na(.data$start_lon) & !is.na(.data$end_lon))
 
-  # Try to create leaflet map, fall back to ggplot if it fails
+  if(interactive) {
+    # Create interactive map with multiple free provider options
+    create_interactive_flow_map(flow_data, zones, map_style)
+  } else {
+    # Create static ggplot flow map (no tokens needed)
+    create_static_flow_map(flow_data, zones)
+  }
+}
+
+#' Create interactive flow map with token-free providers
+#' @param flow_data Prepared flow data
+#' @param zones Spatial zones
+#' @param map_style Map style ("osm", "carto", "stamen")
+#' @return Leaflet map
+create_interactive_flow_map <- function(flow_data, zones, map_style = "osm") {
   tryCatch({
-    # Create map with a provider that doesn't require tokens
+    # Select provider based on style (all token-free)
+    provider <- switch(map_style,
+      "osm" = leaflet::providers$OpenStreetMap,
+      "carto" = leaflet::providers$CartoDB.Positron,
+      "stamen" = leaflet::providers$Stamen.TonerLite,
+      leaflet::providers$OpenStreetMap  # default
+    )
+    
+    # Create base map
     map <- leaflet::leaflet() %>%
-      leaflet::addProviderTiles(leaflet::providers$OpenStreetMap)
+      leaflet::addProviderTiles(provider)
 
     # Add flow lines
     if(nrow(flow_data) > 0) {
@@ -95,33 +119,54 @@ create_flow_map <- function(zones, od_data, min_flow = 100) {
           lat = c(flow_data$start_lat[i], flow_data$end_lat[i]),
           weight = pmax(1, log(flow_data$n_trips[i]) / 3),
           opacity = 0.7,
-          color = "#2c7bb6"
+          color = "#2c7bb6",
+          popup = paste("Flow:", flow_data$n_trips[i], "trips")
         )
       }
     }
 
     return(map)
   }, error = function(e) {
-    # Fallback to ggplot
-    warning("Leaflet map creation failed (", e$message, "). Creating static plot instead.")
-    
-    if(nrow(flow_data) == 0) {
-      return(ggplot2::ggplot() + 
-             ggplot2::annotate("text", x = 0, y = 0, label = "No flows above minimum threshold") +
-             ggplot2::theme_void())
-    }
-    
-    ggplot2::ggplot(flow_data) +
-      ggplot2::geom_segment(
-        ggplot2::aes(x = .data$start_lon, y = .data$start_lat, 
-                     xend = .data$end_lon, yend = .data$end_lat,
-                     size = .data$n_trips),
-        alpha = 0.7, color = "#2c7bb6"
-      ) +
-      ggplot2::scale_size_continuous(name = "Trips", trans = "log10") +
-      ggplot2::labs(title = "Mobility Flows", x = "Longitude", y = "Latitude") +
-      ggplot2::theme_minimal()
+    warning("Interactive map creation failed: ", e$message, ". Using static map.")
+    create_static_flow_map(flow_data, zones)
   })
+}
+
+#' Create static flow map with ggplot2 (no tokens needed)
+#' @param flow_data Prepared flow data
+#' @param zones Spatial zones
+#' @return ggplot object
+create_static_flow_map <- function(flow_data, zones) {
+  if(nrow(flow_data) == 0) {
+    return(ggplot2::ggplot() + 
+           ggplot2::annotate("text", x = 0, y = 0, label = "No flows above minimum threshold") +
+           ggplot2::theme_void())
+  }
+  
+  # Create static flow map
+  p <- ggplot2::ggplot() +
+    ggplot2::geom_sf(data = zones, fill = "lightgray", color = "white", size = 0.2) +
+    ggplot2::geom_segment(
+      data = flow_data,
+      ggplot2::aes(x = .data$start_lon, y = .data$start_lat, 
+                   xend = .data$end_lon, yend = .data$end_lat,
+                   size = .data$n_trips),
+      alpha = 0.7, color = "#2c7bb6"
+    ) +
+    ggplot2::scale_size_continuous(name = "Trips", trans = "log10", range = c(0.3, 2)) +
+    ggplot2::labs(
+      title = "Mobility Flows", 
+      subtitle = "Flow thickness proportional to trip volume",
+      x = "Longitude", 
+      y = "Latitude"
+    ) +
+    ggplot2::theme_minimal() +
+    ggplot2::theme(
+      axis.text = ggplot2::element_text(size = 8),
+      legend.position = "bottom"
+    )
+  
+  return(p)
 }
 
 #' Plot mobility heatmap

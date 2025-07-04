@@ -1,8 +1,21 @@
 # mobspain: Spanish Mobility Data Analysis Toolkit
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Token-Free](https://img.shields.io/badge/Token--Free-✅-brightgreen)](https://github.com/iprincegh/mobspain-r-package)
+[![Open Source](https://img.shields.io/badge/Open%20Source-❤️-red)](https://github.com/iprincegh/mobspain-r-package)
 
 A comprehensive R package for analyzing Spanish mobility patterns using MITMA (Ministry of Transport, Mobility and Urban Agenda) data. Built on `spanishoddata` with enhanced analytics, visualization, and performance features.
+
+## 🌟 **100% Token-Free & Open Access**
+
+**No API keys, no tokens, no payment required!** This package is designed for maximum accessibility:
+
+- ✅ **Free forever** - No hidden costs or subscription fees
+- ✅ **No API tokens** - Works immediately after installation
+- ✅ **Open source maps** - OpenStreetMap, CartoDB, Stamen
+- ✅ **Offline capable** - Core functionality works without internet
+- ✅ **Student friendly** - Perfect for educational use
+- ✅ **Research ready** - Reproducible and transparent
 
 ## ✨ Key Features
 

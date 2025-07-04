@@ -5,7 +5,7 @@
 #' @importFrom sf st_area st_as_sf st_set_crs st_sfc st_point
 #' @importFrom ggplot2 ggplot aes geom_line labs theme_minimal
 #' @importFrom utils globalVariables
-#' @importFrom stats coef lm quantile
+#' @importFrom stats coef lm quantile reorder sd
 #' @importFrom rlang .data
 NULL
 
@@ -18,5 +18,6 @@ globalVariables(c(
   "connectivity_index", "area_km2", "trip_density", "internal_density",
   "z_score", "is_anomaly", "distance_km", "hour", "flow_type",
   "destination_name", "datetime", "name", "avg_outbound", "avg_inbound",
-  "avg_internal", "unique_destinations", "unique_origins", "connected_zone"
+  "avg_internal", "unique_destinations", "unique_origins", "connected_zone",
+  "daily_trips", "avg_daily_trips", "max_daily_trips", "min_daily_trips"
 ))

@@ -8,6 +8,7 @@
 # R build artifacts
 *.tar.gz
 *.Rcheck/
+..Rcheck/
 /check/
 
 # Compiled code

@@ -4,7 +4,13 @@
 \alias{create_flow_map}
 \title{Create flow map}
 \usage{
-create_flow_map(zones, od_data, min_flow = 100)
+create_flow_map(
+  zones,
+  od_data,
+  min_flow = 100,
+  map_style = "osm",
+  interactive = TRUE
+)
 }
 \arguments{
 \item{zones}{Spatial zones (sf object)}
@@ -12,6 +18,10 @@ create_flow_map(zones, od_data, min_flow = 100)
 \item{od_data}{Aggregated OD data with columns: origin/id_origin, destination/id_destination, flow/n_trips}
 
 \item{min_flow}{Minimum flow to display (default: 100)}
+
+\item{map_style}{Map style for interactive maps: "osm", "carto", "stamen" (default: "osm")}
+
+\item{interactive}{Whether to create interactive (leaflet) or static (ggplot) map (default: TRUE)}
 }
 \value{
 leaflet map or ggplot if leaflet fails

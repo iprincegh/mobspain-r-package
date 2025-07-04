@@ -218,7 +218,7 @@ create_district_flow_plot <- function(district_flows, zones, district_id, distri
     dplyr::filter(id_origin == district_id, id_destination != district_id) %>%
     dplyr::group_by(id_destination) %>%
     dplyr::summarise(total_trips = sum(n_trips, na.rm = TRUE), .groups = "drop") %>%
-    dplyr::arrange(desc(total_trips)) %>%
+    dplyr::arrange(dplyr::desc(.data$total_trips)) %>%
     dplyr::slice_head(n = top_n) %>%
     dplyr::left_join(zones %>% sf::st_drop_geometry() %>% dplyr::select(id, name), 
                      by = c("id_destination" = "id")) %>%
@@ -232,7 +232,7 @@ create_district_flow_plot <- function(district_flows, zones, district_id, distri
     dplyr::filter(id_destination == district_id, id_origin != district_id) %>%
     dplyr::group_by(id_origin) %>%
     dplyr::summarise(total_trips = sum(n_trips, na.rm = TRUE), .groups = "drop") %>%
-    dplyr::arrange(desc(total_trips)) %>%
+    dplyr::arrange(dplyr::desc(.data$total_trips)) %>%
     dplyr::slice_head(n = top_n) %>%
     dplyr::left_join(zones %>% sf::st_drop_geometry() %>% dplyr::select(id, name), 
                      by = c("id_origin" = "id")) %>%
@@ -332,7 +332,7 @@ create_district_flow_map <- function(district_flows, zones, district_id, distric
     ) %>%
     dplyr::group_by(connected_zone, flow_type) %>%
     dplyr::summarise(total_trips = sum(n_trips, na.rm = TRUE), .groups = "drop") %>%
-    dplyr::arrange(desc(total_trips)) %>%
+    dplyr::arrange(dplyr::desc(.data$total_trips)) %>%
     dplyr::slice_head(n = top_n)
   
   # Join with zone geometries
