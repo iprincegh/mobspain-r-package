@@ -53,6 +53,20 @@ init_data_dir <- function(path = "~/spanish_mobility_data", version = 2) {
 #'
 #' @return DuckDB connection object
 #' @export
+#' @examples
+#' \dontrun{
+#' # First initialize data directory
+#' init_data_dir()
+#' 
+#' # Connect to the database
+#' con <- connect_mobility_db()
+#' 
+#' # Use the connection for custom queries
+#' result <- DBI::dbGetQuery(con, "SELECT * FROM mobility_data LIMIT 10")
+#' 
+#' # Don't forget to close the connection
+#' DBI::dbDisconnect(con)
+#' }
 connect_mobility_db <- function() {
   data_dir <- getOption("mobspain.data_dir")
   if(is.null(data_dir)) stop("Run init_data_dir() first")
@@ -119,7 +133,24 @@ standardize_od_columns <- function(od_data) {
 #' @examples
 #' # Get comprehensive version information
 #' version_info <- get_data_version_info()
-#' version_info$comparison
+#' 
+#' # View comparison table
+#' print(version_info$comparison)
+#' 
+#' # Get recommendations
+#' print(version_info$recommendations)
+#' 
+#' # Check current version
+#' cat("Current version:", version_info$current_version, "\n")
+#' 
+#' # Get details for specific version
+#' v1_info <- version_info$version_1
+#' cat("Version 1 period:", v1_info$period, "\n")
+#' cat("Version 1 characteristics:", paste(v1_info$characteristics, collapse = ", "), "\n")
+#' 
+#' v2_info <- version_info$version_2
+#' cat("Version 2 period:", v2_info$period, "\n")
+#' cat("Version 2 characteristics:", paste(v2_info$characteristics, collapse = ", "), "\n")
 get_data_version_info <- function() {
   list(
     version_1 = list(
@@ -196,6 +227,24 @@ get_data_version_info <- function() {
 #' 
 #' @return Current data version (1 or 2)
 #' @export
+#' @examples
+#' \dontrun{
+#' # Check current data version
+#' current_version <- get_current_data_version()
+#' cat("Current data version:", current_version, "\n")
+#' 
+#' # Set up data directory and check version
+#' init_data_dir(version = 2)
+#' version <- get_current_data_version()
+#' cat("Using version:", version, "\n")
+#' 
+#' # Use in conditional logic
+#' if (get_current_data_version() == 1) {
+#'   cat("Using COVID-19 period data\n")
+#' } else {
+#'   cat("Using enhanced current data\n")
+#' }
+#' }
 get_current_data_version <- function() {
   version <- getOption("mobspain.data_version", 2)
   if (is.null(version)) {

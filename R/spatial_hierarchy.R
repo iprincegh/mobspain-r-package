@@ -74,6 +74,17 @@ get_spatial_zones <- function(level = "dist", version = NULL) {
 #' @param zones sf object from get_spatial_zones()
 #' @return Enhanced sf object with centroid column
 #' @export
+#' @examples
+#' \dontrun{
+#' # Load spatial zones
+#' zones <- get_spatial_zones("dist")
+#' 
+#' # Create spatial index with centroids
+#' zones_indexed <- create_zone_index(zones)
+#' 
+#' # Now you can use the centroids for spatial operations
+#' print(head(zones_indexed$centroid))
+#' }
 create_zone_index <- function(zones) {
   if (!inherits(zones, "sf")) {
     stop("Input must be an sf object", call. = FALSE)

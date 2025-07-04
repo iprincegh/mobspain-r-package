@@ -12,3 +12,18 @@ DuckDB connection object
 \description{
 Establishes connection to DuckDB database with processed mobility data
 }
+\examples{
+\dontrun{
+# First initialize data directory
+init_data_dir()
+
+# Connect to the database
+con <- connect_mobility_db()
+
+# Use the connection for custom queries
+result <- DBI::dbGetQuery(con, "SELECT * FROM mobility_data LIMIT 10")
+
+# Don't forget to close the connection
+DBI::dbDisconnect(con)
+}
+}

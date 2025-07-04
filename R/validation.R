@@ -93,6 +93,28 @@ validate_time_window <- function(time_window) {
 #' @param od_data Origin-destination mobility data
 #' @return List with quality indicators and warnings
 #' @export
+#' @examples
+#' \dontrun{
+#' # Load mobility data
+#' mobility_data <- get_mobility_matrix(dates = c("2023-01-01", "2023-01-07"))
+#' 
+#' # Validate data quality
+#' quality_report <- validate_mitma_data(mobility_data)
+#' print(quality_report)
+#' 
+#' # Check for issues
+#' if (quality_report$has_issues) {
+#'   cat("Data quality issues found:\n")
+#'   print(quality_report$issues)
+#' } else {
+#'   cat("Data quality is good\n")
+#' }
+#' 
+#' # View quality metrics
+#' cat("Missing values:", quality_report$missing_values, "\n")
+#' cat("Zero flows:", quality_report$zero_flows, "\n")
+#' cat("Date range:", quality_report$date_range, "\n")
+#' }
 validate_mitma_data <- function(od_data) {
   quality_report <- list()
   
@@ -141,6 +163,26 @@ validate_mitma_data <- function(od_data) {
 #' @param dates Vector of dates to check
 #' @return Data frame with holiday information
 #' @export
+#' @examples
+#' \dontrun{
+#' # Check holidays for specific dates
+#' dates <- c("2023-01-01", "2023-12-25", "2023-08-15", "2023-05-01")
+#' holiday_info <- check_spanish_holidays(dates)
+#' print(holiday_info)
+#' 
+#' # Check holidays for a date range
+#' date_range <- seq(as.Date("2023-01-01"), as.Date("2023-12-31"), by = "day")
+#' all_holidays <- check_spanish_holidays(date_range)
+#' holidays_only <- all_holidays[all_holidays$is_likely_holiday, ]
+#' print(holidays_only)
+#' 
+#' # Use in mobility analysis to flag potentially unusual dates
+#' mobility_data <- get_mobility_matrix(dates = c("2023-01-01", "2023-01-07"))
+#' unique_dates <- unique(mobility_data$date)
+#' holiday_check <- check_spanish_holidays(unique_dates)
+#' cat("Holidays in the data:", 
+#'     sum(holiday_check$is_likely_holiday), "\n")
+#' }
 check_spanish_holidays <- function(dates) {
   # Common Spanish national holidays (approximate - varies by year)
   holiday_patterns <- data.frame(

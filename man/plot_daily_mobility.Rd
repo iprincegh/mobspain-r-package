@@ -15,3 +15,16 @@ ggplot object
 \description{
 Plot daily mobility patterns
 }
+\examples{
+\dontrun{
+# Load mobility data
+mobility_data <- get_mobility_matrix(dates = c("2023-01-01", "2023-01-07"))
+
+# Create daily mobility plot
+daily_plot <- plot_daily_mobility(mobility_data)
+print(daily_plot)
+
+# Save the plot
+ggplot2::ggsave("daily_mobility.png", daily_plot, width = 10, height = 6)
+}
+}

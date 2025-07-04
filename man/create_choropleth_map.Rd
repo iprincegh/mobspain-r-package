@@ -26,3 +26,27 @@ leaflet map
 \description{
 Create choropleth map of mobility indicators
 }
+\examples{
+\dontrun{
+# Load data
+zones <- get_spatial_zones("dist")
+mobility_data <- get_mobility_matrix(dates = c("2023-01-01", "2023-01-07"))
+
+# Calculate mobility indicators
+indicators <- calculate_mobility_indicators(mobility_data)
+
+# Create choropleth map of total outflow
+choropleth_map <- create_choropleth_map(zones, indicators, "total_outflow")
+print(choropleth_map)
+
+# Create choropleth map of total inflow with different palette
+inflow_map <- create_choropleth_map(zones, indicators, 
+                                  variable = "total_inflow", 
+                                  palette = "plasma")
+print(inflow_map)
+
+# Map net flow (outflow - inflow)
+net_flow_map <- create_choropleth_map(zones, indicators, "net_flow")
+print(net_flow_map)
+}
+}

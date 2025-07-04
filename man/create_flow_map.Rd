@@ -29,3 +29,24 @@ leaflet map or ggplot if leaflet fails
 \description{
 Create flow map
 }
+\examples{
+\dontrun{
+# Load data
+zones <- get_spatial_zones("dist")
+mobility_data <- get_mobility_matrix(dates = c("2023-01-01", "2023-01-07"))
+
+# Create interactive flow map
+flow_map <- create_flow_map(zones, mobility_data, min_flow = 500)
+print(flow_map)
+
+# Create static flow map
+static_map <- create_flow_map(zones, mobility_data, 
+                             min_flow = 500, interactive = FALSE)
+print(static_map)
+
+# Use different map style
+carto_map <- create_flow_map(zones, mobility_data, 
+                            min_flow = 500, map_style = "carto")
+print(carto_map)
+}
+}

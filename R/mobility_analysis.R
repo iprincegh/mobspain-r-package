@@ -164,6 +164,28 @@ get_mobility_matrix <- function(dates = NULL, level = "dist", time_window = NULL
 #' @param od_data Mobility matrix with columns: origin/id_origin, destination/id_destination, flow/n_trips
 #' @return Data frame with containment metrics
 #' @export
+#' @examples
+#' \dontrun{
+#' # Load mobility data
+#' mobility_data <- get_mobility_matrix(dates = c("2023-01-01", "2023-01-07"))
+#' 
+#' # Calculate containment index for all zones
+#' containment_data <- calculate_containment(mobility_data)
+#' print(head(containment_data))
+#' 
+#' # View zones with highest containment (most self-contained)
+#' top_contained <- containment_data[order(-containment_data$containment), ][1:10, ]
+#' print(top_contained)
+#' 
+#' # View zones with lowest containment (most externally connected)
+#' low_contained <- containment_data[order(containment_data$containment), ][1:10, ]
+#' print(low_contained)
+#' 
+#' # Calculate average containment
+#' avg_containment <- weighted.mean(containment_data$containment, 
+#'                                 containment_data$total_trips)
+#' cat("Average containment:", round(avg_containment, 3), "\n")
+#' }
 calculate_containment <- function(od_data) {
   # Standardize column names
   od_data <- standardize_od_columns(od_data)
@@ -185,6 +207,28 @@ calculate_containment <- function(od_data) {
 #' @param zones Optional spatial zones for additional metrics
 #' @return Data frame with comprehensive mobility indicators
 #' @export
+#' @examples
+#' \dontrun{
+#' # Load data
+#' mobility_data <- get_mobility_matrix(dates = c("2023-01-01", "2023-01-07"))
+#' 
+#' # Calculate basic mobility indicators
+#' indicators <- calculate_mobility_indicators(mobility_data)
+#' print(head(indicators))
+#' 
+#' # Calculate indicators with spatial zones for additional metrics
+#' zones <- get_spatial_zones("dist")
+#' indicators_spatial <- calculate_mobility_indicators(mobility_data, zones)
+#' print(head(indicators_spatial))
+#' 
+#' # View top zones by outflow
+#' top_outflow <- indicators[order(-indicators$total_outflow), ][1:10, ]
+#' print(top_outflow)
+#' 
+#' # View zones with highest containment
+#' top_containment <- indicators[order(-indicators$containment), ][1:10, ]
+#' print(top_containment)
+#' }
 calculate_mobility_indicators <- function(od_data, zones = NULL) {
   # Standardize column names
   od_data <- standardize_od_columns(od_data)
@@ -237,6 +281,27 @@ calculate_mobility_indicators <- function(od_data, zones = NULL) {
 #' @param by_weekday Separate analysis for weekdays vs weekends (default: TRUE)
 #' @return Data frame with anomaly flags
 #' @export
+#' @examples
+#' \dontrun{
+#' # Load mobility data with date column
+#' mobility_data <- get_mobility_matrix(dates = c("2023-01-01", "2023-01-31"))
+#' 
+#' # Detect anomalies using z-score method
+#' anomalies_zscore <- detect_mobility_anomalies(mobility_data, method = "zscore")
+#' print(anomalies_zscore[anomalies_zscore$anomaly, ])
+#' 
+#' # Detect anomalies using IQR method with custom threshold
+#' anomalies_iqr <- detect_mobility_anomalies(mobility_data, method = "iqr", threshold = 2)
+#' print(anomalies_iqr[anomalies_iqr$anomaly, ])
+#' 
+#' # Detect anomalies without weekday separation
+#' anomalies_simple <- detect_mobility_anomalies(mobility_data, by_weekday = FALSE)
+#' print(anomalies_simple[anomalies_simple$anomaly, ])
+#' 
+#' # Count anomalies by method
+#' cat("Z-score anomalies:", sum(anomalies_zscore$anomaly), "\n")
+#' cat("IQR anomalies:", sum(anomalies_iqr$anomaly), "\n")
+#' }
 detect_mobility_anomalies <- function(od_data, method = "zscore", threshold = NULL, by_weekday = TRUE) {
   if(!"date" %in% names(od_data)) {
     stop("Data must contain 'date' column", call. = FALSE)
@@ -315,6 +380,27 @@ detect_mobility_anomalies <- function(od_data, method = "zscore", threshold = NU
 #' @param model Model type: "power" or "exponential"
 #' @return List with model parameters and fit statistics
 #' @export
+#' @examples
+#' \dontrun{
+#' # Load data
+#' zones <- get_spatial_zones("dist")
+#' mobility_data <- get_mobility_matrix(dates = c("2023-01-01", "2023-01-07"))
+#' 
+#' # Calculate distance decay with power model
+#' decay_power <- calculate_distance_decay(mobility_data, zones, model = "power")
+#' print(decay_power$parameters)
+#' 
+#' # Calculate distance decay with exponential model
+#' decay_exp <- calculate_distance_decay(mobility_data, zones, model = "exponential")
+#' print(decay_exp$parameters)
+#' 
+#' # Plot the results
+#' plot_distance_decay(decay_power)
+#' 
+#' # Compare model quality
+#' cat("Power model R²:", decay_power$parameters$r_squared, "\n")
+#' cat("Exponential model R²:", decay_exp$parameters$r_squared, "\n")
+#' }
 calculate_distance_decay <- function(od_data, zones, model = "power") {
   if(!inherits(zones, "sf")) {
     stop("zones must be an sf object", call. = FALSE)

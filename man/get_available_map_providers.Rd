@@ -12,3 +12,18 @@ Character vector of available providers
 \description{
 Get available map providers (all token-free)
 }
+\examples{
+# List all available map providers
+providers <- get_available_map_providers()
+
+# Use in flow map creation
+\dontrun{
+zones <- get_spatial_zones("dist")
+mobility <- get_mobility_matrix(dates = c("2023-01-01", "2023-01-07"))
+
+# Create flow map with different providers
+osm_map <- create_flow_map(zones, mobility, map_style = "osm")
+carto_map <- create_flow_map(zones, mobility, map_style = "carto")
+stamen_map <- create_flow_map(zones, mobility, map_style = "stamen")
+}
+}

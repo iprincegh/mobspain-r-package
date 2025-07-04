@@ -17,3 +17,20 @@ ggplot object
 \description{
 Plot mobility heatmap
 }
+\examples{
+\dontrun{
+# Load mobility data
+mobility_data <- get_mobility_matrix(dates = c("2023-01-01", "2023-01-07"))
+
+# Create heatmap of top 50 flows
+heatmap_plot <- plot_mobility_heatmap(mobility_data)
+print(heatmap_plot)
+
+# Create heatmap of top 20 flows
+heatmap_top20 <- plot_mobility_heatmap(mobility_data, top_n = 20)
+print(heatmap_top20)
+
+# Save heatmap
+ggplot2::ggsave("mobility_heatmap.png", heatmap_plot, width = 12, height = 8)
+}
+}

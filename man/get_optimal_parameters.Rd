@@ -17,3 +17,24 @@ List with recommended parameters
 \description{
 Get optimal analysis parameters based on MITMA data characteristics
 }
+\examples{
+\dontrun{
+# Get parameters for exploratory analysis
+params_explore <- get_optimal_parameters("exploratory", "medium")
+print(params_explore)
+
+# Get parameters for detailed analysis
+params_detailed <- get_optimal_parameters("detailed", "large")
+print(params_detailed)
+
+# Get parameters for regional analysis
+params_regional <- get_optimal_parameters("regional", "small")
+print(params_regional)
+
+# Use parameters in analysis
+mobility_data <- get_mobility_matrix(
+  dates = c("2023-01-01", "2023-01-07"),
+  level = params_explore$spatial_level
+)
+}
+}

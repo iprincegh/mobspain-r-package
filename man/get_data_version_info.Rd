@@ -15,5 +15,22 @@ Get information about Spanish mobility data versions
 \examples{
 # Get comprehensive version information
 version_info <- get_data_version_info()
-version_info$comparison
+
+# View comparison table
+print(version_info$comparison)
+
+# Get recommendations
+print(version_info$recommendations)
+
+# Check current version
+cat("Current version:", version_info$current_version, "\n")
+
+# Get details for specific version
+v1_info <- version_info$version_1
+cat("Version 1 period:", v1_info$period, "\n")
+cat("Version 1 characteristics:", paste(v1_info$characteristics, collapse = ", "), "\n")
+
+v2_info <- version_info$version_2
+cat("Version 2 period:", v2_info$period, "\n")
+cat("Version 2 characteristics:", paste(v2_info$characteristics, collapse = ", "), "\n")
 }

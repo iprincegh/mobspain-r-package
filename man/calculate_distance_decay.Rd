@@ -19,3 +19,25 @@ List with model parameters and fit statistics
 \description{
 Calculate distance-decay parameters
 }
+\examples{
+\dontrun{
+# Load data
+zones <- get_spatial_zones("dist")
+mobility_data <- get_mobility_matrix(dates = c("2023-01-01", "2023-01-07"))
+
+# Calculate distance decay with power model
+decay_power <- calculate_distance_decay(mobility_data, zones, model = "power")
+print(decay_power$parameters)
+
+# Calculate distance decay with exponential model
+decay_exp <- calculate_distance_decay(mobility_data, zones, model = "exponential")
+print(decay_exp$parameters)
+
+# Plot the results
+plot_distance_decay(decay_power)
+
+# Compare model quality
+cat("Power model R²:", decay_power$parameters$r_squared, "\n")
+cat("Exponential model R²:", decay_exp$parameters$r_squared, "\n")
+}
+}

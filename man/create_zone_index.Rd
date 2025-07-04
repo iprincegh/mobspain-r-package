@@ -15,3 +15,15 @@ Enhanced sf object with centroid column
 \description{
 Prepares zones for efficient spatial operations by adding centroids
 }
+\examples{
+\dontrun{
+# Load spatial zones
+zones <- get_spatial_zones("dist")
+
+# Create spatial index with centroids
+zones_indexed <- create_zone_index(zones)
+
+# Now you can use the centroids for spatial operations
+print(head(zones_indexed$centroid))
+}
+}

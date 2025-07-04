@@ -17,3 +17,24 @@ ggplot object
 \description{
 Plot distance decay relationship
 }
+\examples{
+\dontrun{
+# Load data
+zones <- get_spatial_zones("dist")
+mobility_data <- get_mobility_matrix(dates = c("2023-01-01", "2023-01-07"))
+
+# Calculate distance decay
+decay_result <- calculate_distance_decay(mobility_data, zones)
+
+# Plot distance decay with log scale
+decay_plot <- plot_distance_decay(decay_result, log_scale = TRUE)
+print(decay_plot)
+
+# Plot distance decay with linear scale
+decay_linear <- plot_distance_decay(decay_result, log_scale = FALSE)
+print(decay_linear)
+
+# Save plot
+ggplot2::ggsave("distance_decay.png", decay_plot, width = 10, height = 6)
+}
+}

@@ -23,3 +23,26 @@ configure_mobspain(
 \description{
 Configure mobspain package settings
 }
+\examples{
+\dontrun{
+# Configure with default settings
+configure_mobspain()
+
+# Configure with custom cache directory
+configure_mobspain(cache_dir = "~/mobspain_cache")
+
+# Configure with parallel processing
+configure_mobspain(parallel = TRUE, n_cores = 4)
+
+# Configure with larger cache size
+configure_mobspain(max_cache_size = 1000)  # 1GB cache
+
+# Configure with all custom settings
+configure_mobspain(
+  cache_dir = "~/mobspain_cache",
+  max_cache_size = 1000,
+  parallel = TRUE,
+  n_cores = 4
+)
+}
+}

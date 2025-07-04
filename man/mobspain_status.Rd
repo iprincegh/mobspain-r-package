@@ -12,3 +12,26 @@ List with package status information
 \description{
 Get package status and diagnostics
 }
+\examples{
+\dontrun{
+# Get package status
+status <- mobspain_status()
+print(status)
+
+# Check specific components
+if (status$data_dir_exists) {
+  cat("Data directory is set up correctly\n")
+} else {
+  cat("Run init_data_dir() to set up data directory\n")
+}
+
+# Check dependencies
+if (status$sf_available) {
+  cat("Spatial analysis available\n")
+}
+
+if (status$database_exists) {
+  cat("Database size:", status$database_size_mb, "MB\n")
+}
+}
+}

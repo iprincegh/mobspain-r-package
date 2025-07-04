@@ -15,3 +15,26 @@ List with quality indicators and warnings
 \description{
 Validate MITMA data quality
 }
+\examples{
+\dontrun{
+# Load mobility data
+mobility_data <- get_mobility_matrix(dates = c("2023-01-01", "2023-01-07"))
+
+# Validate data quality
+quality_report <- validate_mitma_data(mobility_data)
+print(quality_report)
+
+# Check for issues
+if (quality_report$has_issues) {
+  cat("Data quality issues found:\n")
+  print(quality_report$issues)
+} else {
+  cat("Data quality is good\n")
+}
+
+# View quality metrics
+cat("Missing values:", quality_report$missing_values, "\n")
+cat("Zero flows:", quality_report$zero_flows, "\n")
+cat("Date range:", quality_report$date_range, "\n")
+}
+}

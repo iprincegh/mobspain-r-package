@@ -29,3 +29,24 @@ export_visualizations(
 \description{
 Export visualizations to files
 }
+\examples{
+\dontrun{
+# Create visualization suite
+zones <- get_spatial_zones("dist")
+mobility <- get_mobility_matrix(dates = c("2023-01-01", "2023-01-07"))
+viz_suite <- create_mobility_viz_suite(zones, mobility)
+
+# Export to PNG and HTML
+export_visualizations(viz_suite, output_dir = "mobility_plots")
+
+# Export to multiple formats
+export_visualizations(viz_suite, 
+                     output_dir = "mobility_plots", 
+                     formats = c("png", "pdf", "html"))
+
+# Export with custom dimensions
+export_visualizations(viz_suite, 
+                     output_dir = "mobility_plots",
+                     width = 12, height = 8, dpi = 400)
+}
+}

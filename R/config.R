@@ -5,6 +5,28 @@
 #' @param parallel Enable parallel processing (default: FALSE)
 #' @param n_cores Number of cores for parallel processing (default: 2)
 #' @export
+#' @examples
+#' \dontrun{
+#' # Configure with default settings
+#' configure_mobspain()
+#' 
+#' # Configure with custom cache directory
+#' configure_mobspain(cache_dir = "~/mobspain_cache")
+#' 
+#' # Configure with parallel processing
+#' configure_mobspain(parallel = TRUE, n_cores = 4)
+#' 
+#' # Configure with larger cache size
+#' configure_mobspain(max_cache_size = 1000)  # 1GB cache
+#' 
+#' # Configure with all custom settings
+#' configure_mobspain(
+#'   cache_dir = "~/mobspain_cache",
+#'   max_cache_size = 1000,
+#'   parallel = TRUE,
+#'   n_cores = 4
+#' )
+#' }
 configure_mobspain <- function(cache_dir = tempdir(), max_cache_size = 500, 
                               parallel = FALSE, n_cores = 2) {
   options(
@@ -30,6 +52,28 @@ configure_mobspain <- function(cache_dir = tempdir(), max_cache_size = 500,
 #'
 #' @return List with package status information
 #' @export
+#' @examples
+#' \dontrun{
+#' # Get package status
+#' status <- mobspain_status()
+#' print(status)
+#' 
+#' # Check specific components
+#' if (status$data_dir_exists) {
+#'   cat("Data directory is set up correctly\n")
+#' } else {
+#'   cat("Run init_data_dir() to set up data directory\n")
+#' }
+#' 
+#' # Check dependencies
+#' if (status$sf_available) {
+#'   cat("Spatial analysis available\n")
+#' }
+#' 
+#' if (status$database_exists) {
+#'   cat("Database size:", status$database_size_mb, "MB\n")
+#' }
+#' }
 mobspain_status <- function() {
   data_dir <- getOption("mobspain.data_dir")
   cache_dir <- getOption("mobspain.cache_dir", tempdir())
@@ -95,6 +139,26 @@ print.mobspain_status <- function(x, ...) {
 #' @param data_size Expected data size: "small", "medium", "large"
 #' @return List with recommended parameters
 #' @export
+#' @examples
+#' \dontrun{
+#' # Get parameters for exploratory analysis
+#' params_explore <- get_optimal_parameters("exploratory", "medium")
+#' print(params_explore)
+#' 
+#' # Get parameters for detailed analysis
+#' params_detailed <- get_optimal_parameters("detailed", "large")
+#' print(params_detailed)
+#' 
+#' # Get parameters for regional analysis
+#' params_regional <- get_optimal_parameters("regional", "small")
+#' print(params_regional)
+#' 
+#' # Use parameters in analysis
+#' mobility_data <- get_mobility_matrix(
+#'   dates = c("2023-01-01", "2023-01-07"),
+#'   level = params_explore$spatial_level
+#' )
+#' }
 get_optimal_parameters <- function(analysis_type = "exploratory", data_size = "medium") {
   
   params <- list()

@@ -43,8 +43,8 @@ The MITMA mobility data is derived from mobile phone analytics and provides orig
 First, initialize a data directory for storing MITMA data:
 
 ```{r setup_data}
-# Set up data directory
-init_data_dir("~/spanish_mobility_data")
+# Set up data directory (use version 2 for enhanced data)
+init_data_dir("~/spanish_mobility_data", version = 2)
 
 # Check package status
 mobspain_status()
@@ -77,15 +77,15 @@ Download Spanish administrative boundaries that correspond to MITMA data zones:
 ```{r spatial_zones}
 # Get districts (finest spatial resolution)
 # These are sub-municipal divisions used by MITMA
-districts <- get_spatial_zones("dist")  # ~3,909 zones
+districts <- get_spatial_zones("dist", version = 2)  # ~3,909 zones
 
 # Get municipalities (standard administrative units)
 # These correspond to official Spanish municipalities
-municipalities <- get_spatial_zones("muni")  # ~8,131 zones
+municipalities <- get_spatial_zones("muni", version = 2)  # ~8,131 zones
 
 # Get large urban areas (metropolitan areas)
 # These represent major urban agglomerations
-large_urban_areas <- get_spatial_zones("lua")  # ~85 zones
+large_urban_areas <- get_spatial_zones("lua", version = 2)  # ~85 zones
 
 # Check the structure of spatial data
 print(paste("Districts loaded:", nrow(districts), "zones"))
@@ -101,7 +101,8 @@ Get real mobility matrices from MITMA. The data represents aggregated trips betw
 # Note: Dates should be >= 2020-02-14 when MITMA data starts
 mobility_data <- get_mobility_matrix(
   dates = c("2023-01-01", "2023-01-07"),
-  level = "dist"  # Districts: ~3,909 zones
+  level = "dist",  # Districts: ~3,909 zones
+  version = 2
 )
 
 # Get morning rush hour data (7-9 AM)
@@ -109,13 +110,15 @@ mobility_data <- get_mobility_matrix(
 commute_data <- get_mobility_matrix(
   dates = c("2023-03-01", "2023-03-07"), 
   level = "dist",
-  time_window = c(7, 9)  # Morning commute hours
+  time_window = c(7, 9),  # Morning commute hours
+  version = 2
 )
 
 # Alternative: Get municipality-level data (fewer zones, faster processing)
 muni_mobility <- get_mobility_matrix(
   dates = c("2023-01-01", "2023-01-03"),
-  level = "muni"  # Municipalities: ~8,131 zones
+  level = "muni",  # Municipalities: ~8,131 zones
+  version = 2
 )
 ```
 

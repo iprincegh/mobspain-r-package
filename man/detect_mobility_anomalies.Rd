@@ -26,3 +26,25 @@ Data frame with anomaly flags
 \description{
 Detect anomalous mobility patterns
 }
+\examples{
+\dontrun{
+# Load mobility data with date column
+mobility_data <- get_mobility_matrix(dates = c("2023-01-01", "2023-01-31"))
+
+# Detect anomalies using z-score method
+anomalies_zscore <- detect_mobility_anomalies(mobility_data, method = "zscore")
+print(anomalies_zscore[anomalies_zscore$anomaly, ])
+
+# Detect anomalies using IQR method with custom threshold
+anomalies_iqr <- detect_mobility_anomalies(mobility_data, method = "iqr", threshold = 2)
+print(anomalies_iqr[anomalies_iqr$anomaly, ])
+
+# Detect anomalies without weekday separation
+anomalies_simple <- detect_mobility_anomalies(mobility_data, by_weekday = FALSE)
+print(anomalies_simple[anomalies_simple$anomaly, ])
+
+# Count anomalies by method
+cat("Z-score anomalies:", sum(anomalies_zscore$anomaly), "\n")
+cat("IQR anomalies:", sum(anomalies_iqr$anomaly), "\n")
+}
+}

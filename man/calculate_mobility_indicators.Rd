@@ -17,3 +17,26 @@ Data frame with comprehensive mobility indicators
 \description{
 Calculate mobility indicators
 }
+\examples{
+\dontrun{
+# Load data
+mobility_data <- get_mobility_matrix(dates = c("2023-01-01", "2023-01-07"))
+
+# Calculate basic mobility indicators
+indicators <- calculate_mobility_indicators(mobility_data)
+print(head(indicators))
+
+# Calculate indicators with spatial zones for additional metrics
+zones <- get_spatial_zones("dist")
+indicators_spatial <- calculate_mobility_indicators(mobility_data, zones)
+print(head(indicators_spatial))
+
+# View top zones by outflow
+top_outflow <- indicators[order(-indicators$total_outflow), ][1:10, ]
+print(top_outflow)
+
+# View zones with highest containment
+top_containment <- indicators[order(-indicators$containment), ][1:10, ]
+print(top_containment)
+}
+}

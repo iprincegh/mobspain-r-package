@@ -15,3 +15,26 @@ Data frame with containment metrics
 \description{
 Calculate self-containment index
 }
+\examples{
+\dontrun{
+# Load mobility data
+mobility_data <- get_mobility_matrix(dates = c("2023-01-01", "2023-01-07"))
+
+# Calculate containment index for all zones
+containment_data <- calculate_containment(mobility_data)
+print(head(containment_data))
+
+# View zones with highest containment (most self-contained)
+top_contained <- containment_data[order(-containment_data$containment), ][1:10, ]
+print(top_contained)
+
+# View zones with lowest containment (most externally connected)
+low_contained <- containment_data[order(containment_data$containment), ][1:10, ]
+print(low_contained)
+
+# Calculate average containment
+avg_containment <- weighted.mean(containment_data$containment, 
+                                containment_data$total_trips)
+cat("Average containment:", round(avg_containment, 3), "\n")
+}
+}

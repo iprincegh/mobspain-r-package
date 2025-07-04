@@ -15,6 +15,18 @@
 #' @param od_data Mobility matrix with columns: origin/id_origin, destination/id_destination, flow/n_trips, date
 #' @return ggplot object
 #' @export
+#' @examples
+#' \dontrun{
+#' # Load mobility data
+#' mobility_data <- get_mobility_matrix(dates = c("2023-01-01", "2023-01-07"))
+#' 
+#' # Create daily mobility plot
+#' daily_plot <- plot_daily_mobility(mobility_data)
+#' print(daily_plot)
+#' 
+#' # Save the plot
+#' ggplot2::ggsave("daily_mobility.png", daily_plot, width = 10, height = 6)
+#' }
 plot_daily_mobility <- function(od_data) {
   # Standardize column names
   od_data <- standardize_od_columns(od_data)
@@ -51,6 +63,26 @@ plot_daily_mobility <- function(od_data) {
 #' @param interactive Whether to create interactive (leaflet) or static (ggplot) map (default: TRUE)
 #' @return leaflet map or ggplot if leaflet fails
 #' @export
+#' @examples
+#' \dontrun{
+#' # Load data
+#' zones <- get_spatial_zones("dist")
+#' mobility_data <- get_mobility_matrix(dates = c("2023-01-01", "2023-01-07"))
+#' 
+#' # Create interactive flow map
+#' flow_map <- create_flow_map(zones, mobility_data, min_flow = 500)
+#' print(flow_map)
+#' 
+#' # Create static flow map
+#' static_map <- create_flow_map(zones, mobility_data, 
+#'                              min_flow = 500, interactive = FALSE)
+#' print(static_map)
+#' 
+#' # Use different map style
+#' carto_map <- create_flow_map(zones, mobility_data, 
+#'                             min_flow = 500, map_style = "carto")
+#' print(carto_map)
+#' }
 create_flow_map <- function(zones, od_data, min_flow = 100, map_style = "osm", interactive = TRUE) {
   # Standardize column names
   od_data <- standardize_od_columns(od_data)
@@ -187,6 +219,22 @@ create_static_flow_map <- function(flow_data, zones) {
 #' @param top_n Number of top flows to show (default: 50)
 #' @return ggplot object
 #' @export
+#' @examples
+#' \dontrun{
+#' # Load mobility data
+#' mobility_data <- get_mobility_matrix(dates = c("2023-01-01", "2023-01-07"))
+#' 
+#' # Create heatmap of top 50 flows
+#' heatmap_plot <- plot_mobility_heatmap(mobility_data)
+#' print(heatmap_plot)
+#' 
+#' # Create heatmap of top 20 flows
+#' heatmap_top20 <- plot_mobility_heatmap(mobility_data, top_n = 20)
+#' print(heatmap_top20)
+#' 
+#' # Save heatmap
+#' ggplot2::ggsave("mobility_heatmap.png", heatmap_plot, width = 12, height = 8)
+#' }
 plot_mobility_heatmap <- function(od_data, top_n = 50) {
   # Standardize column names
   od_data <- standardize_od_columns(od_data)
@@ -218,6 +266,26 @@ plot_mobility_heatmap <- function(od_data, top_n = 50) {
 #' @param log_scale Use log scale for axes (default: TRUE)
 #' @return ggplot object
 #' @export
+#' @examples
+#' \dontrun{
+#' # Load data
+#' zones <- get_spatial_zones("dist")
+#' mobility_data <- get_mobility_matrix(dates = c("2023-01-01", "2023-01-07"))
+#' 
+#' # Calculate distance decay
+#' decay_result <- calculate_distance_decay(mobility_data, zones)
+#' 
+#' # Plot distance decay with log scale
+#' decay_plot <- plot_distance_decay(decay_result, log_scale = TRUE)
+#' print(decay_plot)
+#' 
+#' # Plot distance decay with linear scale
+#' decay_linear <- plot_distance_decay(decay_result, log_scale = FALSE)
+#' print(decay_linear)
+#' 
+#' # Save plot
+#' ggplot2::ggsave("distance_decay.png", decay_plot, width = 10, height = 6)
+#' }
 plot_distance_decay <- function(decay_result, log_scale = TRUE) {
   if(!is.list(decay_result) || !"data" %in% names(decay_result)) {
     stop("Input must be result from calculate_distance_decay()", call. = FALSE)
@@ -251,6 +319,29 @@ plot_distance_decay <- function(decay_result, log_scale = TRUE) {
 #' @param palette Color palette (default: "viridis")
 #' @return leaflet map
 #' @export
+#' @examples
+#' \dontrun{
+#' # Load data
+#' zones <- get_spatial_zones("dist")
+#' mobility_data <- get_mobility_matrix(dates = c("2023-01-01", "2023-01-07"))
+#' 
+#' # Calculate mobility indicators
+#' indicators <- calculate_mobility_indicators(mobility_data)
+#' 
+#' # Create choropleth map of total outflow
+#' choropleth_map <- create_choropleth_map(zones, indicators, "total_outflow")
+#' print(choropleth_map)
+#' 
+#' # Create choropleth map of total inflow with different palette
+#' inflow_map <- create_choropleth_map(zones, indicators, 
+#'                                   variable = "total_inflow", 
+#'                                   palette = "plasma")
+#' print(inflow_map)
+#' 
+#' # Map net flow (outflow - inflow)
+#' net_flow_map <- create_choropleth_map(zones, indicators, "net_flow")
+#' print(net_flow_map)
+#' }
 create_choropleth_map <- function(zones, indicators, variable = "total_outflow", palette = "viridis") {
   if(!inherits(zones, "sf")) {
     stop("zones must be an sf object", call. = FALSE)
@@ -502,6 +593,20 @@ print.mobility_viz_suite <- function(x, ...) {
 #' Get available map providers (all token-free)
 #' @return Character vector of available providers
 #' @export
+#' @examples
+#' # List all available map providers
+#' providers <- get_available_map_providers()
+#' 
+#' # Use in flow map creation
+#' \dontrun{
+#' zones <- get_spatial_zones("dist")
+#' mobility <- get_mobility_matrix(dates = c("2023-01-01", "2023-01-07"))
+#' 
+#' # Create flow map with different providers
+#' osm_map <- create_flow_map(zones, mobility, map_style = "osm")
+#' carto_map <- create_flow_map(zones, mobility, map_style = "carto")
+#' stamen_map <- create_flow_map(zones, mobility, map_style = "stamen")
+#' }
 get_available_map_providers <- function() {
   providers <- c(
     "osm" = "OpenStreetMap (default)",
@@ -527,6 +632,26 @@ get_available_map_providers <- function() {
 #' @param height Plot height in inches
 #' @param dpi Resolution for raster formats
 #' @export
+#' @examples
+#' \dontrun{
+#' # Create visualization suite
+#' zones <- get_spatial_zones("dist")
+#' mobility <- get_mobility_matrix(dates = c("2023-01-01", "2023-01-07"))
+#' viz_suite <- create_mobility_viz_suite(zones, mobility)
+#' 
+#' # Export to PNG and HTML
+#' export_visualizations(viz_suite, output_dir = "mobility_plots")
+#' 
+#' # Export to multiple formats
+#' export_visualizations(viz_suite, 
+#'                      output_dir = "mobility_plots", 
+#'                      formats = c("png", "pdf", "html"))
+#' 
+#' # Export with custom dimensions
+#' export_visualizations(viz_suite, 
+#'                      output_dir = "mobility_plots",
+#'                      width = 12, height = 8, dpi = 400)
+#' }
 export_visualizations <- function(viz_suite, output_dir = ".", 
                                 formats = c("png", "html"), 
                                 width = 10, height = 8, dpi = 300) {
