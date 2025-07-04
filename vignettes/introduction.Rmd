@@ -18,6 +18,9 @@ knitr::opts_chunk$set(
 ```{r library}
 library(mobspain)
 library(dplyr)
+library(sf)        # For spatial data manipulation and plotting
+library(ggplot2)   # For advanced plotting
+library(leaflet)   # For interactive maps
 ```
 
 ## Introduction
@@ -117,6 +120,21 @@ print(paste("Spatial zones with area data:", sum(!is.na(districts$area_km2))))
 
 # Access key columns: districts$id, districts$name, districts$geometry, districts$area_km2
 head(districts[, c("id", "name", "area_km2")])
+
+# Plot zones using sf geometry
+library(sf)
+plot(st_geometry(districts), main = "Spanish Districts", col = "lightblue")
+
+# Plot with data visualization
+plot(districts["area_km2"], main = "District Areas (km²)")
+
+# Basic map with ggplot2
+library(ggplot2)
+ggplot(districts) +
+  geom_sf(aes(fill = area_km2)) +
+  scale_fill_viridis_c(name = "Area (km²)") +
+  labs(title = "Spanish Districts by Area") +
+  theme_minimal()
 ```
 
 ### Mobility Data Retrieval
@@ -402,6 +420,64 @@ if("distance_bins" %in% names(decay_model)) {
 
 ## Visualization
 
+### Plotting Spatial Zones
+
+The spatial zones are `sf` objects that can be plotted using multiple approaches:
+
+```{r plot_zones}
+# Basic geometry plotting with sf
+library(sf)
+library(ggplot2)
+
+# Simple boundary plot
+plot(st_geometry(districts), main = "Spanish Districts", 
+     col = "lightblue", border = "darkblue")
+
+# Plot with data attributes
+plot(districts["area_km2"], main = "District Areas (km²)")
+
+# Population density (if available)
+if("population" %in% names(districts) && "area_km2" %in% names(districts)) {
+  districts$pop_density <- districts$population / districts$area_km2
+  plot(districts["pop_density"], main = "Population Density (per km²)")
+}
+
+# Advanced ggplot2 visualization
+zone_plot <- ggplot(districts) +
+  geom_sf(aes(fill = area_km2), color = "white", size = 0.1) +
+  scale_fill_viridis_c(name = "Area\n(km²)", trans = "log10") +
+  labs(title = "Spanish Districts by Area", 
+       subtitle = "Administrative boundaries for mobility analysis") +
+  theme_void() +
+  theme(legend.position = "bottom")
+print(zone_plot)
+
+# Focus on specific regions (e.g., Madrid area)
+madrid_zones <- districts[grepl("Madrid", districts$name, ignore.case = TRUE), ]
+if(nrow(madrid_zones) > 0) {
+  madrid_plot <- ggplot(madrid_zones) +
+    geom_sf(aes(fill = area_km2), color = "white") +
+    scale_fill_viridis_c(name = "Area (km²)") +
+    labs(title = "Madrid Districts") +
+    theme_void()
+  print(madrid_plot)
+}
+
+# Interactive plotting with leaflet
+library(leaflet)
+leaflet(districts[1:50, ]) %>%  # First 50 zones for performance
+  addTiles() %>%
+  addPolygons(
+    fillColor = ~colorQuantile("YlOrRd", area_km2)(area_km2),
+    weight = 1,
+    opacity = 1,
+    color = "white",
+    dashArray = "3",
+    fillOpacity = 0.7,
+    popup = ~paste("Zone:", name, "<br>Area:", round(area_km2, 1), "km²")
+  )
+```
+
 ### Time Series Plots
 
 Visualize mobility trends over time:
@@ -595,6 +671,18 @@ When working with MITMA data, consider:
 - **Temporal Patterns**: Weekdays vs. weekends show different mobility patterns; holidays and special events may create anomalies
 - **Spatial Resolution**: District-level data provides fine detail but requires more computational resources; municipality or LUA levels may be more appropriate for regional studies
 - **Privacy Protection**: All data is aggregated and anonymized according to Spanish data protection standards
+
+### Plotting and Visualization Options
+
+The package provides multiple ways to visualize spatial data:
+
+- **Basic sf plotting**: Use `plot(st_geometry(zones))` for simple boundary maps
+- **Data visualization**: Use `plot(zones["variable"])` to show spatial patterns
+- **ggplot2 integration**: Create publication-quality maps with `geom_sf()`
+- **Interactive maps**: Use built-in leaflet functions or create custom interactive maps
+- **Statistical plots**: Time series, heatmaps, and decay plots for analytical visualization
+
+All spatial zones are standard `sf` objects compatible with the broader R spatial ecosystem.
 
 ### Further Resources
 
