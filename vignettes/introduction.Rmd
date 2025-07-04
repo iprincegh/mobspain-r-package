@@ -944,6 +944,6 @@ All spatial zones are standard `sf` objects compatible with the broader R spatia
 
 - **MITMA Methodology**: [Official methodological report](https://www.transportes.gob.es/recursos_mfom/paginabasica/recursos/a3_informe_metodologico_estudio_movilidad_mitms_v8.pdf)
 - **Package Documentation**: `?mobspain` or `help(package = "mobspain")`
-- **Example Scripts**: See `complete_working_example.R` and `simple_mobspain_example.R` in the package repository
+- **Example Scripts**: See `basic_example.R`, `advanced_example.R`, and `spanishoddata_example.R` in the package repository
 
 For more information, see the package documentation and example scripts.

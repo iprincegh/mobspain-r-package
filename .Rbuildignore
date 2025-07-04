@@ -9,3 +9,9 @@
 ^test_all_functions\.R$
 ^doc$
 ^Meta$
+^ADVANCED_SUMMARY\.md$
+^CLEANUP_SUMMARY\.md$
+^advanced_example\.R$
+^basic_example\.R$
+^spanishoddata_example\.R$
+^data-raw$
