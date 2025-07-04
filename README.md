@@ -47,7 +47,47 @@ init_data_dir(version = 1)  # COVID-19 studies
 
 ## Key Functions
 
-### Data Access
+### Data Access (High-Level)
+```r
+# Initialize data directory with version options
+init_data_dir(
+  path = "~/spanish_mobility_data",  # Custom path
+  version = 2                        # 1 (2020-2021) or 2 (2022+)
+)
+
+# Get spatial zones - level options: "dist", "muni", "ccaa"
+zones <- get_spatial_zones("dist")  # Districts (~3,909)
+zones <- get_spatial_zones("muni")  # Municipalities (~8,131)
+zones <- get_spatial_zones("ccaa")  # Autonomous communities (~17)
+
+# Get mobility data with parameters
+mobility <- get_mobility_matrix(
+  dates = c("2023-01-01", "2023-01-07"),  # Date range
+  level = "dist",                          # "dist", "muni", "ccaa"
+  time_range = c(6, 10),                   # Hour range (optional)
+  filter_weekends = FALSE                   # Include/exclude weekends
+)
+```
+
+### Advanced Data Access (spanishoddata)
+```r
+# Direct access to spanishoddata functions for advanced workflows
+library(spanishoddata)
+
+# Fine-grained data retrieval
+od_data <- spod_get("od", zones = "distr", dates = "2021-04-07")
+districts <- spod_get_zones("dist", ver = 1)
+
+# Advanced preprocessing with dplyr
+od_processed <- od_data |>
+  group_by(origin = id_origin, dest = id_destination) |>
+  summarise(count = sum(n_trips, na.rm = TRUE), .groups = "drop") |>
+  collect()
+
+# Create functional urban areas
+madrid_zones <- districts |> filter(grepl("Madrid", name))
+madrid_fua <- districts[st_buffer(madrid_zones, dist = 10000), ]
+```
 ```r
 # Initialize data directory with version options
 init_data_dir(
