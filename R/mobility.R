@@ -573,8 +573,16 @@ get_enhanced_mobility_data <- function(dates,
   # Validate inputs
   validate_enhanced_data_request(data_type, zone_level, version, demographic_filter)
   
+  # Convert short codes to long names for metadata
+  data_type_long <- switch(data_type,
+    "od" = "origin_destination",
+    "nt" = "number_of_trips", 
+    "os" = "overnight_stays",
+    data_type  # fallback to original if no match
+  )
+  
   # Get metadata for request
-  metadata <- get_data_type_metadata(data_type, version, zone_level)
+  metadata <- get_data_type_metadata(data_type_long, version, zone_level)
   
   # Process dates to spanishoddata format
   processed_dates <- process_dates_for_spanishoddata(dates)

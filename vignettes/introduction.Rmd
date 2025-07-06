@@ -175,11 +175,11 @@ weekend_data <- get_mobility_matrix(
 )
 
 # Check data structure and key columns
-print("Mobility data structure:")
-print(str(mobility_data))
-print("Key columns:", paste(names(mobility_data), collapse = ", "))
-print("Date range:", range(mobility_data$date))
-print("Total rows:", nrow(mobility_data))
+cat("Mobility data structure:\n")
+str(mobility_data)
+cat("Key columns:", paste(names(mobility_data), collapse = ", "), "\n")
+cat("Date range:", as.character(range(mobility_data$date)), "\n")
+cat("Total rows:", nrow(mobility_data), "\n")
 ```
 
 ## Analytics
