@@ -38,7 +38,7 @@ The package now provides enhanced data access with intelligent caching and versi
 # Get mobility data with auto-detection and caching
 mobility_data <- get_enhanced_mobility_data(
   dates = c("2022-01-01", "2022-01-07"),
-  data_type = "od",
+  data_type = "origin_destination",
   zone_level = "districts",
   use_cache = TRUE
 )
@@ -66,7 +66,7 @@ cat("Using data version:", current_version)
 # Filter by demographics
 filtered_data <- get_enhanced_mobility_data(
   dates = c("2022-01-01", "2022-01-07"),
-  data_type = "od",
+  data_type = "origin_destination",
   zone_level = "districts",
   demographic_filter = list(
     age = c("25-45", "45-65"),
@@ -301,7 +301,7 @@ date_ranges <- list(
 results <- mclapply(date_ranges, function(dates) {
   get_enhanced_mobility_data(
     dates = dates,
-    data_type = "od",
+    data_type = "origin_destination",
     zone_level = "districts"
   )
 }, mc.cores = 2)
@@ -384,7 +384,7 @@ weather_enhanced <- join_with_weather_data(
 # Estimate data size before download
 size_estimate <- estimate_download_size(
   dates = c("2022-01-01", "2022-12-31"),
-  data_type = "od",
+  data_type = "origin_destination",
   zone_level = "districts"
 )
 
@@ -393,7 +393,7 @@ cat("Estimated download size:", size_estimate$total_gb, "GB")
 # Use data subsetting for large analyses
 subset_data <- get_enhanced_mobility_data(
   dates = c("2022-01-01", "2022-01-07"),
-  data_type = "od",
+  data_type = "origin_destination",
   zone_level = "districts",
   aggregate_temporal = TRUE,  # Aggregate by day
   demographic_filter = list(age = c("25-45"))  # Filter demographics
@@ -407,7 +407,7 @@ subset_data <- get_enhanced_mobility_data(
 tryCatch({
   mobility_data <- get_enhanced_mobility_data(
     dates = c("2022-01-01", "2022-01-07"),
-    data_type = "od",
+    data_type = "origin_destination",
     zone_level = "districts"
   )
 }, error = function(e) {
@@ -415,7 +415,7 @@ tryCatch({
   # Fallback to cached data
   mobility_data <- get_cached_data(
     dates = c("2022-01-01", "2022-01-07"),
-    data_type = "od"
+    data_type = "origin_destination"
   )
 })
 ```

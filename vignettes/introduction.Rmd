@@ -56,10 +56,8 @@ init_data_dir(
 # Configure package with specific options
 configure_mobspain(
   parallel = TRUE,              # Enable parallel processing
-  n_cores = 4,                  # Number of CPU cores (default: detectCores()-1)
-  cache_enabled = TRUE,         # Enable data caching
-  cache_max_size = 500,         # Cache size in MB
-  cache_max_age_days = 7        # Cache expiration in days
+  n_cores = 4,                  # Number of CPU cores
+  max_cache_size = 500          # Cache size in MB
 )
 
 # Check package status and configuration
@@ -894,12 +892,7 @@ The package supports advanced configuration:
 configure_mobspain(
   parallel = TRUE,                  # Enable parallel processing
   n_cores = 4,                      # Number of CPU cores
-  cache_enabled = TRUE,             # Enable data caching
-  cache_max_size = 1000,            # Cache size in MB
-  cache_max_age_days = 14,          # Cache expiration (days)
-  data_source = "csv",              # Options: "csv", "duckdb"
-  validate_data = TRUE,             # Validate data on load
-  verbose = TRUE                    # Print status messages
+  max_cache_size = 1000             # Cache size in MB
 )
 
 # Check detailed configuration status
