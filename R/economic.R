@@ -457,3 +457,148 @@ analyze_job_accessibility <- function(mobility_data,
     accessibility_summary = accessibility_summary
   ))
 }
+
+#' Analyze income-based mobility patterns
+#'
+#' Analyzes mobility patterns based on income levels and socioeconomic indicators
+#' when available in the mobility data
+#'
+#' @param mobility_data Data frame with mobility flows and socioeconomic indicators
+#' @param spatial_zones Spatial zones data frame with economic indicators (optional)
+#' @param income_col Column name for income data (default: "income_level")
+#' @param min_trips Minimum trips threshold (default: 10)
+#' @return List with income-based mobility analysis results
+#' @export
+#' @examples
+#' \dontrun{
+#' # Analyze income mobility patterns
+#' income_analysis <- analyze_income_mobility(mobility_data)
+#' print(income_analysis$income_summary)
+#' 
+#' # Use custom income column
+#' custom_income <- analyze_income_mobility(
+#'   mobility_data,
+#'   income_col = "socioeconomic_status"
+#' )
+#' 
+#' # Include spatial economic zones
+#' spatial_income <- analyze_income_mobility(
+#'   mobility_data,
+#'   spatial_zones = zones
+#' )
+#' }
+analyze_income_mobility <- function(mobility_data,
+                                   spatial_zones = NULL,
+                                   income_col = "income_level",
+                                   min_trips = 10) {
+  # Validate required columns
+  required_cols <- c("id_origin", "id_destination", "n_trips")
+  missing_cols <- setdiff(required_cols, names(mobility_data))
+  if (length(missing_cols) > 0) {
+    stop("Missing required columns: ", paste(missing_cols, collapse = ", "))
+  }
+  
+  # Check for income-related columns
+  income_cols <- c(income_col, "income_origin", "income_destination", 
+                   "income_level", "socioeconomic_status", "economic_level")
+  available_income_cols <- intersect(income_cols, names(mobility_data))
+  
+  if(length(available_income_cols) == 0) {
+    warning("No income-related columns found in mobility data. Available columns: ", 
+            paste(names(mobility_data), collapse = ", "))
+    return(NULL)
+  }
+  
+  # Use the first available income column
+  income_var <- available_income_cols[1]
+  
+  # Filter data with income information
+  income_mobility <- mobility_data %>%
+    filter(!is.na(!!sym(income_var)) & n_trips >= min_trips)
+  
+  if(nrow(income_mobility) == 0) {
+    warning("No mobility data with income information after filtering")
+    return(NULL)
+  }
+  
+  # Calculate income-based mobility patterns
+  income_patterns <- income_mobility %>%
+    group_by(income_level = !!sym(income_var)) %>%
+    summarise(
+      total_trips = sum(n_trips, na.rm = TRUE),
+      avg_trips_per_flow = mean(n_trips, na.rm = TRUE),
+      unique_flows = n(),
+      total_origins = n_distinct(id_origin),
+      total_destinations = n_distinct(id_destination),
+      .groups = "drop"
+    ) %>%
+    mutate(
+      trips_proportion = total_trips / sum(total_trips),
+      mobility_index = (total_origins + total_destinations) / 2,
+      flow_efficiency = unique_flows / (total_origins * total_destinations)
+    ) %>%
+    arrange(desc(total_trips))
+  
+  # Calculate income-based accessibility
+  income_accessibility <- income_mobility %>%
+    group_by(id_origin, income_level = !!sym(income_var)) %>%
+    summarise(
+      accessible_destinations = n_distinct(id_destination),
+      total_outbound_trips = sum(n_trips, na.rm = TRUE),
+      .groups = "drop"
+    ) %>%
+    group_by(income_level) %>%
+    summarise(
+      avg_accessibility = mean(accessible_destinations, na.rm = TRUE),
+      avg_outbound_trips = mean(total_outbound_trips, na.rm = TRUE),
+      accessibility_dispersion = sd(accessible_destinations, na.rm = TRUE),
+      .groups = "drop"
+    )
+  
+  # Calculate income mobility matrix
+  if("income_origin" %in% names(mobility_data) && "income_destination" %in% names(mobility_data)) {
+    income_matrix <- mobility_data %>%
+      filter(!is.na(income_origin) & !is.na(income_destination)) %>%
+      group_by(income_origin, income_destination) %>%
+      summarise(
+        total_trips = sum(n_trips, na.rm = TRUE),
+        flow_count = n(),
+        .groups = "drop"
+      ) %>%
+      mutate(
+        flow_proportion = total_trips / sum(total_trips),
+        is_same_income = income_origin == income_destination
+      )
+    
+    # Calculate income mobility rates
+    income_mobility_rates <- income_matrix %>%
+      group_by(income_origin) %>%
+      summarise(
+        total_outbound = sum(total_trips),
+        same_income_trips = sum(total_trips[is_same_income]),
+        income_retention_rate = same_income_trips / total_outbound,
+        .groups = "drop"
+      )
+  } else {
+    income_matrix <- NULL
+    income_mobility_rates <- NULL
+  }
+  
+  # Summary statistics
+  income_summary <- list(
+    total_income_levels = nrow(income_patterns),
+    most_mobile_income = income_patterns$income_level[1],
+    least_mobile_income = income_patterns$income_level[nrow(income_patterns)],
+    income_mobility_inequality = sd(income_patterns$trips_proportion, na.rm = TRUE),
+    avg_accessibility_by_income = mean(income_accessibility$avg_accessibility, na.rm = TRUE)
+  )
+  
+  return(list(
+    income_patterns = income_patterns,
+    income_accessibility = income_accessibility,
+    income_matrix = income_matrix,
+    income_mobility_rates = income_mobility_rates,
+    income_summary = income_summary,
+    analysis_column = income_var
+  ))
+}

@@ -2,11 +2,12 @@
 #' @import lubridate
 #' @import leaflet
 #' @import dplyr
-#' @importFrom sf st_area st_as_sf st_set_crs st_sfc st_point
-#' @importFrom ggplot2 ggplot aes geom_line labs theme_minimal
-#' @importFrom utils globalVariables
-#' @importFrom stats coef lm quantile reorder sd median weighted.mean
+#' @importFrom sf st_area st_as_sf st_set_crs st_sfc st_point st_centroid st_distance
+#' @importFrom ggplot2 ggplot aes geom_line labs theme_minimal geom_point geom_smooth
+#' @importFrom utils globalVariables head tail
+#' @importFrom stats coef lm quantile reorder sd median weighted.mean aggregate as.formula complete.cases fitted frequency pnorm predict ts var
 #' @importFrom rlang .data sym
+#' @importFrom methods is
 NULL
 
 # Declare global variables to avoid R CMD check warnings
@@ -69,5 +70,9 @@ globalVariables(c(
   "activity_type", "avg_distance", "avg_distance_km", "coverage", "dest_total",
   "distance_band", "flow_count", "from", "inbound_commutes", "inbound_trips",
   "origin_total", "outbound_commutes", "outbound_trips", "to", "total_commuters",
-  "total_groups", "trips"
+  "total_groups", "trips", "income_level", "income_origin", "income_destination",
+  "accessible_destinations", "total_outbound_trips", "avg_accessibility",
+  "avg_outbound_trips", "accessibility_dispersion", "flow_proportion",
+  "is_same_income", "total_outbound", "same_income_trips", "income_retention_rate",
+  "trips_proportion", "mobility_index", "flow_efficiency"
 ))

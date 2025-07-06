@@ -17,12 +17,32 @@ offering advanced analytics, interactive visualizations, and performance
 optimizations for researchers, urban planners, and data scientists.
 \subsection{Key Features}{
 
+\subsection{Enhanced Data Access}{
+\itemize{
+\item Intelligent data version detection and caching
+\item Seamless integration with spanishoddata package
+\item Robust fallback mechanisms (database -> CSV -> download)
+\item Demographic filtering for v2 data
+\item Comprehensive metadata and data summaries
+}
+}
+
 \subsection{Advanced Analytics}{
 \itemize{
 \item Mobility indicators (containment, connectivity, flow analysis)
 \item Anomaly detection using statistical methods
 \item Distance decay modeling (power law, exponential)
-\item Spatial analysis with geometric support
+\item Time series analysis with seasonal decomposition
+\item Machine learning integration for predictive analytics
+}
+}
+
+\subsection{Geospatial Analysis}{
+\itemize{
+\item Spatial autocorrelation analysis (Moran's I, Geary's C)
+\item Hotspot detection with LISA indicators
+\item Accessibility analysis (gravity-based, cumulative)
+\item Spatial clustering and pattern detection
 }
 }
 
@@ -30,9 +50,18 @@ optimizations for researchers, urban planners, and data scientists.
 \itemize{
 \item Interactive flow maps with Leaflet
 \item Choropleth maps with custom palettes
-\item Time series plots for mobility patterns
+\item Time series plots with anomaly highlighting
+\item Comprehensive dashboard creation
 \item Origin-destination heatmaps
-\item Distance-decay relationship plots
+}
+}
+
+\subsection{Data Quality & Validation}{
+\itemize{
+\item Comprehensive data validation and quality assessment
+\item Metadata consistency checking
+\item Anomaly detection and flagging
+\item Data completeness analysis
 }
 }
 
@@ -46,37 +75,53 @@ optimizations for researchers, urban planners, and data scientists.
 }
 }
 
+\subsection{Data Versions}{
+
+The package supports both versions of Spanish mobility data:
+
+\itemize{
+\item \strong{Version 1 (2020-2021):} COVID-19 pandemic period data
+\item \strong{Version 2 (2022 onwards):} Enhanced data with demographics (recommended)
+}
+}
+
 \subsection{Quick Start}{
 
 \preformatted{
 # Load the package
 library(mobspain)
 
-# Configure package (optional)
-configure_mobspain(parallel = TRUE, n_cores = 4)
+# Configure data directory (recommended)
+init_data_dir("~/spanish_mobility_data", version = 2)
 
-# Check package status
-mobspain_status()
-
-# Initialize data directory
-init_data_dir("~/spanish_mobility_data")
-
-# Get spatial zones
-zones <- get_spatial_zones("dist")  # Districts
-
-# Get mobility data
-mobility <- get_mobility_matrix(
-  dates = c("2023-01-01", "2023-01-07"),
-  level = "dist",
-  time_window = c(7, 9)  # Morning commute
+# Get mobility data with intelligent caching
+mobility_data <- get_enhanced_mobility_data(
+  dates = c("2022-01-01", "2022-01-07"),
+  data_type = "od",
+  zone_level = "districts"
 )
 
-# Calculate comprehensive indicators
-indicators <- calculate_mobility_indicators(mobility, zones)
+# Analyze temporal patterns
+ts_analysis <- analyze_mobility_time_series(
+  mobility_data,
+  temporal_resolution = "daily",
+  detect_anomalies = TRUE
+)
 
-# Create visualizations
-plot_daily_mobility(mobility)
-create_flow_map(mobility, zones, min_flow = 100)
+# Create interactive dashboard
+dashboard <- create_mobility_dashboard(
+  mobility_data,
+  dashboard_type = "overview",
+  title = "Spanish Mobility Analysis"
+)
+
+# Analyze spatial patterns
+districts <- get_enhanced_spatial_zones("districts", version = 2)
+spatial_analysis <- analyze_spatial_patterns(
+  mobility_data,
+  districts,
+  analysis_type = "hotspots"
+)
 }
 }
 

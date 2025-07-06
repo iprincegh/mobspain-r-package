@@ -1,18 +1,19 @@
 Package: mobspain
 Title: Spanish Mobility Data Analysis Toolkit
-Version: 0.1.0
+Version: 0.2.0
 Authors@R: 
     person("Prince", "Oppong Boakye", email = "prynx44@gmail.com", role = c("aut", "cre"))
 Author: Prince Oppong Boakye [aut, cre]
 Maintainer: Prince Oppong Boakye <prynx44@gmail.com>
 Description: A comprehensive toolkit for analyzing Spanish mobility patterns using 
-    MITMA (Ministry of Transport, Mobility and Urban Agenda) data. Provides 21+ 
+    MITMA (Ministry of Transport, Mobility and Urban Agenda) data. Provides 40+ 
     functions for data retrieval, advanced analytics, validation, and visualization. 
-    Features include containment analysis, anomaly detection with weekday/weekend 
-    context, distance-decay modeling, interactive flow maps, comprehensive 
-    mobility indicators, and district-specific analysis with heatmaps and flow 
-    visualization. Built on spanishoddata with enhanced performance, 
-    intelligent caching, and production-ready data quality tools.
+    Features include enhanced data access with intelligent caching, comprehensive 
+    time series analysis with seasonal decomposition, advanced geospatial analysis 
+    with hotspot detection, interactive dashboard creation, containment analysis, 
+    anomaly detection, distance-decay modeling, machine learning integration, 
+    and comprehensive data validation. Built on spanishoddata with performance 
+    optimizations, intelligent fallback mechanisms, and production-ready tools.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
@@ -29,13 +30,27 @@ Imports:
     digest,
     rlang,
     stats,
-    tools
+    tools,
+    methods
 Suggests: 
     testthat (>= 3.0.0),
     knitr,
     rmarkdown,
     parallel,
-    htmlwidgets
+    htmlwidgets,
+    e1071,
+    isotree,
+    randomForest,
+    spdep,
+    units,
+    xgboost,
+    zoo,
+    plotly,
+    DT,
+    shiny,
+    shinydashboard,
+    seasonal,
+    flowmapblue
 VignetteBuilder: knitr
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2

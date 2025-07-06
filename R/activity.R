@@ -74,7 +74,7 @@ calculate_activity_patterns <- function(mobility_data, min_trips = 10, normalize
       flow_balance = diff(trips)[1],
       .groups = "drop"
     ) %>%
-    filter(from < to)  # Remove duplicates
+    filter(as.character(from) < as.character(to))  # Remove duplicates, handle factors
   
   return(list(
     activity_matrix = activity_matrix,
@@ -598,7 +598,7 @@ analyze_mobility_network <- function(mobility_data,
       mutate(
         return_trips = ifelse(is.na(return_trips), 0, return_trips),
         bilateral_strength = total_trips + return_trips,
-        flow_symmetry = pmin(total_trips, return_trips) / pmax(total_trips, return_trips)
+        flow_symmetry = pmin(as.numeric(total_trips), as.numeric(return_trips)) / pmax(as.numeric(total_trips), as.numeric(return_trips))
       ) %>%
       filter(bilateral_strength > quantile(bilateral_strength, 0.75, na.rm = TRUE)) %>%
       arrange(desc(bilateral_strength))
@@ -607,8 +607,8 @@ analyze_mobility_network <- function(mobility_data,
     communities <- bilateral_flows %>%
       slice_head(n = min(50, nrow(bilateral_flows))) %>%
       select(id_origin, id_destination, bilateral_strength) %>%
-      mutate(community_pair = paste(pmin(id_origin, id_destination), 
-                                   pmax(id_origin, id_destination), sep = "_"))
+      mutate(community_pair = paste(pmin(as.character(id_origin), as.character(id_destination)), 
+                                   pmax(as.character(id_origin), as.character(id_destination)), sep = "_"))
     
     community_summary <- communities %>%
       group_by(community_pair) %>%
@@ -622,21 +622,51 @@ analyze_mobility_network <- function(mobility_data,
   
   # Integrate spatial information if available
   if (!is.null(spatial_zones)) {
+    # Flexible column detection for spatial zones
+    id_cols <- c("id", "zone_id", "district_id", "area_id")
+    name_cols <- c("name", "zone_name", "district_name", "area_name", "district_names_in_v2")
+    area_cols <- c("area_km2", "area", "surface_km2")
+    
+    # Find available columns
+    id_col <- intersect(id_cols, names(spatial_zones))[1]
+    name_col <- intersect(name_cols, names(spatial_zones))[1]
+    area_col <- intersect(area_cols, names(spatial_zones))[1]
+    
+    # Create join data with available columns
+    join_data <- spatial_zones %>%
+      select(node = !!rlang::sym(id_col))
+    
+    # Add name column if available
+    if (!is.na(name_col)) {
+      join_data <- join_data %>%
+        mutate(zone_name = spatial_zones[[name_col]])
+    }
+    
+    # Add area column if available
+    if (!is.na(area_col)) {
+      join_data <- join_data %>%
+        mutate(area_km2 = spatial_zones[[area_col]])
+    }
+    
     # Add spatial context to network analysis
     spatial_network <- node_stats %>%
-      left_join(
-        spatial_zones %>% select(node = id, zone_name = name, area_km2),
-        by = "node"
-      ) %>%
-      mutate(
-        trips_per_km2 = total_strength / area_km2,
-        spatial_efficiency = degree_centrality / log(area_km2 + 1)
-      )
+      left_join(join_data, by = "node")
     
-    network_stats$spatial_integration <- TRUE
-    network_stats$avg_area_km2 <- mean(spatial_network$area_km2, na.rm = TRUE)
-    network_stats$trips_per_km2 <- sum(spatial_network$total_strength, na.rm = TRUE) / 
-                                   sum(spatial_network$area_km2, na.rm = TRUE)
+    # Calculate spatial metrics only if area is available
+    if (!is.na(area_col)) {
+      spatial_network <- spatial_network %>%
+        mutate(
+          trips_per_km2 = total_strength / area_km2,
+          spatial_efficiency = degree_centrality / log(area_km2 + 1)
+        )
+      
+      network_stats$spatial_integration <- TRUE
+      network_stats$avg_area_km2 <- mean(spatial_network$area_km2, na.rm = TRUE)
+      network_stats$trips_per_km2 <- sum(spatial_network$total_strength, na.rm = TRUE) / 
+                                     sum(spatial_network$area_km2, na.rm = TRUE)
+    } else {
+      network_stats$spatial_integration <- "partial"
+    }
   } else {
     spatial_network <- node_stats
     network_stats$spatial_integration <- FALSE

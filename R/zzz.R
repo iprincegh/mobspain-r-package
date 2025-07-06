@@ -10,6 +10,12 @@
   )
 }
 
+# Global variable declarations for R CMD check
+utils::globalVariables(c(
+  "total_origins",
+  "total_destinations"
+))
+
 .onLoad <- function(libname, pkgname) {
   # Set default options if not already set
   if(is.null(getOption("mobspain.cache_dir"))) {
@@ -23,5 +29,8 @@
   }
   if(is.null(getOption("mobspain.cache_max_age_days"))) {
     options(mobspain.cache_max_age_days = 7)
+  }
+  if(is.null(getOption("mobspain.use_csv"))) {
+    options(mobspain.use_csv = TRUE)  # Default to CSV access for reliability
   }
 }

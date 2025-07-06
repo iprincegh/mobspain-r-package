@@ -139,7 +139,7 @@ create_flow_map <- function(zones, od_data, min_flow = 100, map_style = "osm", i
 
   if(interactive) {
     # Create interactive map with multiple free provider options
-    create_interactive_flow_map(flow_data, zones, map_style)
+    create_flow_map_leaflet(flow_data, zones, map_style)
   } else {
     # Create static ggplot flow map (no tokens needed)
     create_static_flow_map(flow_data, zones)
@@ -151,7 +151,7 @@ create_flow_map <- function(zones, od_data, min_flow = 100, map_style = "osm", i
 #' @param zones Spatial zones
 #' @param map_style Map style ("osm", "carto", "stamen")
 #' @return Leaflet map
-create_interactive_flow_map <- function(flow_data, zones, map_style = "osm") {
+create_flow_map_leaflet <- function(flow_data, zones, map_style = "osm") {
   tryCatch({
     # Select provider based on style (all token-free)
     provider <- switch(map_style,
@@ -303,6 +303,21 @@ plot_distance_decay <- function(decay_result, log_scale = TRUE) {
   
   data <- decay_result$data
   params <- decay_result$parameters
+  
+  # Remove missing values and ensure positive values for log scale
+  if(log_scale) {
+    data <- data %>%
+      filter(!is.na(distance_km) & !is.na(total_trips) & 
+             distance_km > 0 & total_trips > 0)
+  } else {
+    data <- data %>%
+      filter(!is.na(distance_km) & !is.na(total_trips))
+  }
+  
+  # Check if we have enough data points
+  if(nrow(data) < 3) {
+    stop("Not enough valid data points for distance decay plot", call. = FALSE)
+  }
   
   p <- ggplot2::ggplot(data, ggplot2::aes(x = .data$distance_km, y = .data$total_trips)) +
     ggplot2::geom_point(alpha = 0.6, color = "steelblue") +

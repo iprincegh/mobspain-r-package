@@ -216,3 +216,397 @@ check_spanish_holidays <- function(dates) {
   
   return(holiday_check)
 }
+
+# Enhanced Spanish Mobility Data Validation and Quality Assessment
+
+#' Validate Spanish mobility data comprehensively
+#'
+#' @param mobility_data Data frame with Spanish mobility data
+#' @param version Data version (1 or 2) to validate against
+#' @param check_completeness Check for data completeness
+#' @param check_consistency Check for internal consistency
+#' @param check_anomalies Check for statistical anomalies
+#' @return List with validation results and recommendations
+#' @export
+#' @examples
+#' \dontrun{
+#' # Validate mobility data
+#' mobility_data <- get_mobility_matrix(dates = c("2020-04-01", "2020-04-07"))
+#' validation <- validate_spanish_mobility_data(mobility_data, version = 1)
+#' print(validation$summary)
+#' print(validation$recommendations)
+#' }
+validate_spanish_mobility_data <- function(mobility_data, version = NULL, 
+                                         check_completeness = TRUE,
+                                         check_consistency = TRUE,
+                                         check_anomalies = TRUE) {
+  
+  if(is.null(version)) {
+    version <- getOption("mobspain.data_version", 2)
+  }
+  
+  validation_results <- list()
+  
+  # Basic structure validation
+  validation_results$structure <- validate_data_structure(mobility_data, version)
+  
+  # Completeness validation
+  if(check_completeness) {
+    validation_results$completeness <- validate_data_completeness(mobility_data, version)
+  }
+  
+  # Consistency validation
+  if(check_consistency) {
+    validation_results$consistency <- validate_data_consistency(mobility_data, version)
+  }
+  
+  # Anomaly detection
+  if(check_anomalies) {
+    validation_results$anomalies <- validate_data_anomalies(mobility_data, version)
+  }
+  
+  # Generate summary and recommendations
+  validation_results$summary <- generate_validation_summary(validation_results)
+  validation_results$recommendations <- generate_validation_recommendations(validation_results, version)
+  
+  class(validation_results) <- "spanish_mobility_validation"
+  return(validation_results)
+}
+
+#' Validate data structure against Spanish mobility data specifications
+#' @param mobility_data Data frame with mobility data
+#' @param version Data version (1 or 2)
+#' @return List with structure validation results
+#' @keywords internal
+validate_data_structure <- function(mobility_data, version) {
+  
+  # Expected columns for each version
+  v1_required_cols <- c("date", "hour", "id_origin", "id_destination", "n_trips")
+  v1_optional_cols <- c("distance", "activity_origin", "activity_destination", 
+                       "residence_province_ine_code", "residence_province_name",
+                       "trips_total_length_km")
+  
+  v2_required_cols <- c("date", "hour", "id_origin", "id_destination", "n_trips")
+  v2_optional_cols <- c("distance", "age", "sex", "income", "activity_origin", 
+                       "activity_destination", "residence_province_ine_code",
+                       "trips_total_length_km")
+  
+  required_cols <- if(version == 1) v1_required_cols else v2_required_cols
+  optional_cols <- if(version == 1) v1_optional_cols else v2_optional_cols
+  
+  actual_cols <- names(mobility_data)
+  
+  # Check required columns
+  missing_required <- setdiff(required_cols, actual_cols)
+  present_required <- intersect(required_cols, actual_cols)
+  
+  # Check optional columns
+  missing_optional <- setdiff(optional_cols, actual_cols)
+  present_optional <- intersect(optional_cols, actual_cols)
+  
+  # Check unexpected columns
+  expected_all <- c(required_cols, optional_cols)
+  unexpected_cols <- setdiff(actual_cols, expected_all)
+  
+  return(list(
+    version = version,
+    required_columns = list(
+      expected = required_cols,
+      present = present_required,
+      missing = missing_required,
+      complete = length(missing_required) == 0
+    ),
+    optional_columns = list(
+      expected = optional_cols,
+      present = present_optional,
+      missing = missing_optional
+    ),
+    unexpected_columns = unexpected_cols,
+    total_columns = length(actual_cols),
+    structure_valid = length(missing_required) == 0
+  ))
+}
+
+#' Validate data completeness
+#' @param mobility_data Data frame with mobility data
+#' @param version Data version
+#' @return List with completeness validation results
+#' @keywords internal
+validate_data_completeness <- function(mobility_data, version) {
+  
+  total_rows <- nrow(mobility_data)
+  
+  completeness <- list()
+  
+  for(col in names(mobility_data)) {
+    missing_count <- sum(is.na(mobility_data[[col]]))
+    completeness[[col]] <- list(
+      missing_count = missing_count,
+      missing_percentage = round(missing_count / total_rows * 100, 2),
+      complete_percentage = round((total_rows - missing_count) / total_rows * 100, 2)
+    )
+  }
+  
+  # Overall completeness score
+  overall_missing <- sum(sapply(completeness, function(x) x$missing_count))
+  total_cells <- total_rows * length(names(mobility_data))
+  overall_completeness <- round((total_cells - overall_missing) / total_cells * 100, 2)
+  
+  return(list(
+    by_column = completeness,
+    total_rows = total_rows,
+    total_columns = length(names(mobility_data)),
+    overall_completeness_percentage = overall_completeness,
+    completeness_threshold_met = overall_completeness >= 95  # 95% threshold
+  ))
+}
+
+#' Validate data consistency
+#' @param mobility_data Data frame with mobility data
+#' @param version Data version
+#' @return List with consistency validation results
+#' @keywords internal
+validate_data_consistency <- function(mobility_data, version) {
+  
+  consistency_checks <- list()
+  
+  # Date consistency
+  if("date" %in% names(mobility_data)) {
+    dates <- as.Date(mobility_data$date)
+    consistency_checks$dates <- list(
+      valid_dates = sum(!is.na(dates)),
+      invalid_dates = sum(is.na(dates)),
+      date_range = range(dates, na.rm = TRUE),
+      unique_dates = length(unique(dates))
+    )
+  }
+  
+  # Hour consistency (should be 0-23)
+  if("hour" %in% names(mobility_data)) {
+    hours <- mobility_data$hour
+    consistency_checks$hours <- list(
+      valid_hours = sum(hours >= 0 & hours <= 23, na.rm = TRUE),
+      invalid_hours = sum(hours < 0 | hours > 23, na.rm = TRUE),
+      unique_hours = length(unique(hours))
+    )
+  }
+  
+  # Trip counts consistency (should be positive)
+  if("n_trips" %in% names(mobility_data)) {
+    trips <- mobility_data$n_trips
+    consistency_checks$trips <- list(
+      positive_trips = sum(trips > 0, na.rm = TRUE),
+      zero_trips = sum(trips == 0, na.rm = TRUE),
+      negative_trips = sum(trips < 0, na.rm = TRUE),
+      mean_trips = round(mean(trips, na.rm = TRUE), 2),
+      median_trips = round(median(trips, na.rm = TRUE), 2)
+    )
+  }
+  
+  # Distance consistency (valid categories)
+  if("distance" %in% names(mobility_data)) {
+    valid_distances <- c("0005-002", "002-005", "005-010", "010-050", "050-100", "100+")
+    distances <- mobility_data$distance
+    consistency_checks$distances <- list(
+      valid_categories = sum(distances %in% valid_distances, na.rm = TRUE),
+      invalid_categories = sum(!distances %in% valid_distances & !is.na(distances)),
+      unique_categories = unique(distances)
+    )
+  }
+  
+  return(consistency_checks)
+}
+
+#' Validate data for statistical anomalies
+#' @param mobility_data Data frame with mobility data
+#' @param version Data version
+#' @return List with anomaly validation results
+#' @keywords internal
+validate_data_anomalies <- function(mobility_data, version) {
+  
+  anomalies <- list()
+  
+  if("n_trips" %in% names(mobility_data)) {
+    trips <- mobility_data$n_trips[!is.na(mobility_data$n_trips)]
+    
+    if(length(trips) > 0) {
+      # Statistical outliers using IQR method
+      Q1 <- quantile(trips, 0.25)
+      Q3 <- quantile(trips, 0.75)
+      IQR <- Q3 - Q1
+      lower_bound <- Q1 - 1.5 * IQR
+      upper_bound <- Q3 + 1.5 * IQR
+      
+      outliers <- trips < lower_bound | trips > upper_bound
+      
+      anomalies$trips <- list(
+        total_records = length(trips),
+        outliers_count = sum(outliers),
+        outliers_percentage = round(sum(outliers) / length(trips) * 100, 2),
+        extreme_values = list(
+          very_high = sum(trips > quantile(trips, 0.99)),
+          very_low = sum(trips < quantile(trips, 0.01))
+        ),
+        statistics = list(
+          mean = round(mean(trips), 2),
+          median = round(median(trips), 2),
+          std_dev = round(sd(trips), 2),
+          min = min(trips),
+          max = max(trips)
+        )
+      )
+    }
+  }
+  
+  return(anomalies)
+}
+
+#' Generate validation summary
+#' @param validation_results List with all validation results
+#' @return Character vector with summary
+#' @keywords internal
+generate_validation_summary <- function(validation_results) {
+  
+  summary <- character()
+  
+  # Structure summary
+  if(!is.null(validation_results$structure)) {
+    structure_status <- if(validation_results$structure$structure_valid) "[PASS]" else "[FAIL]"
+    summary <- c(summary, paste("Structure validation:", structure_status))
+  }
+  
+  # Completeness summary
+  if(!is.null(validation_results$completeness)) {
+    completeness_status <- if(validation_results$completeness$completeness_threshold_met) "[PASS]" else "[WARNING]"
+    summary <- c(summary, paste("Completeness validation:", completeness_status, 
+                               paste0("(", validation_results$completeness$overall_completeness_percentage, "%)")))
+  }
+  
+  # Consistency summary
+  if(!is.null(validation_results$consistency)) {
+    summary <- c(summary, "Consistency validation: [CHECKED]")
+  }
+  
+  # Anomalies summary
+  if(!is.null(validation_results$anomalies)) {
+    summary <- c(summary, "Anomaly detection: [COMPLETED]")
+  }
+  
+  return(summary)
+}
+
+#' Generate validation recommendations
+#' @param validation_results List with all validation results
+#' @param version Data version
+#' @return Character vector with recommendations
+#' @keywords internal
+generate_validation_recommendations <- function(validation_results, version) {
+  
+  recommendations <- character()
+  
+  # Structure recommendations
+  if(!is.null(validation_results$structure)) {
+    if(!validation_results$structure$structure_valid) {
+      missing <- validation_results$structure$required_columns$missing
+      recommendations <- c(recommendations, 
+                          paste("Missing required columns:", paste(missing, collapse = ", ")))
+    }
+    
+    if(length(validation_results$structure$unexpected_columns) > 0) {
+      unexpected <- validation_results$structure$unexpected_columns
+      recommendations <- c(recommendations,
+                          paste("Unexpected columns found:", paste(unexpected, collapse = ", ")))
+    }
+  }
+  
+  # Completeness recommendations
+  if(!is.null(validation_results$completeness)) {
+    if(!validation_results$completeness$completeness_threshold_met) {
+      recommendations <- c(recommendations,
+                          paste("Data completeness below 95% threshold:",
+                               validation_results$completeness$overall_completeness_percentage, "%"))
+    }
+    
+    # Check individual columns with high missing rates
+    high_missing <- names(validation_results$completeness$by_column)[
+      sapply(validation_results$completeness$by_column, function(x) x$missing_percentage > 20)
+    ]
+    
+    if(length(high_missing) > 0) {
+      recommendations <- c(recommendations,
+                          paste("Columns with >20% missing data:", paste(high_missing, collapse = ", ")))
+    }
+  }
+  
+  # Consistency recommendations
+  if(!is.null(validation_results$consistency)) {
+    if(!is.null(validation_results$consistency$trips)) {
+      if(validation_results$consistency$trips$negative_trips > 0) {
+        recommendations <- c(recommendations,
+                            paste("Found", validation_results$consistency$trips$negative_trips, "negative trip counts"))
+      }
+    }
+    
+    if(!is.null(validation_results$consistency$hours)) {
+      if(validation_results$consistency$hours$invalid_hours > 0) {
+        recommendations <- c(recommendations,
+                            paste("Found", validation_results$consistency$hours$invalid_hours, "invalid hours (not 0-23)"))
+      }
+    }
+  }
+  
+  # Anomaly recommendations
+  if(!is.null(validation_results$anomalies$trips)) {
+    if(validation_results$anomalies$trips$outliers_percentage > 5) {
+      recommendations <- c(recommendations,
+                          paste("High outlier rate in trip counts:",
+                               validation_results$anomalies$trips$outliers_percentage, "%"))
+    }
+  }
+  
+  # General recommendations
+  if(length(recommendations) == 0) {
+    recommendations <- c("Data validation passed all checks. Data appears to be high quality.")
+  } else {
+    recommendations <- c("Data validation completed with issues. Please review:",
+                        recommendations)
+  }
+  
+  return(recommendations)
+}
+
+#' Print method for Spanish mobility validation results
+#' @param x Spanish mobility validation object
+#' @param ... Additional arguments
+#' @export
+print.spanish_mobility_validation <- function(x, ...) {
+  cat("Spanish Mobility Data Validation Report\n")
+  cat("=====================================\n\n")
+  
+  cat("Summary:\n")
+  cat(paste(x$summary, collapse = "\n"), "\n\n")
+  
+  cat("Recommendations:\n")
+  cat(paste(x$recommendations, collapse = "\n"), "\n\n")
+  
+  if(!is.null(x$structure)) {
+    cat("Structure Details:\n")
+    cat("- Required columns present:", length(x$structure$required_columns$present), "/", 
+        length(x$structure$required_columns$expected), "\n")
+    cat("- Optional columns present:", length(x$structure$optional_columns$present), "/",
+        length(x$structure$optional_columns$expected), "\n")
+    if(length(x$structure$unexpected_columns) > 0) {
+      cat("- Unexpected columns:", length(x$structure$unexpected_columns), "\n")
+    }
+    cat("\n")
+  }
+  
+  if(!is.null(x$completeness)) {
+    cat("Completeness Details:\n")
+    cat("- Overall completeness:", x$completeness$overall_completeness_percentage, "%\n")
+    cat("- Total rows:", x$completeness$total_rows, "\n")
+    cat("- Total columns:", x$completeness$total_columns, "\n\n")
+  }
+  
+  invisible(x)
+}

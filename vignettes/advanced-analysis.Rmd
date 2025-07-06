@@ -1,0 +1,437 @@
+---
+title: "Advanced Spanish Mobility Data Analysis with mobspain"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Advanced Spanish Mobility Data Analysis with mobspain}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = FALSE
+)
+```
+
+# Advanced Spanish Mobility Data Analysis with mobspain
+
+The `mobspain` package provides a comprehensive toolkit for analyzing Spanish mobility patterns using MITMA (Ministry of Transport, Mobility and Urban Agenda) data. This vignette demonstrates the advanced features introduced in version 0.2.0.
+
+## Setup
+
+```{r setup}
+library(mobspain)
+
+# Initialize data directory with version 2 (recommended)
+init_data_dir("~/spanish_mobility_data", version = 2)
+```
+
+## Enhanced Data Access
+
+### Intelligent Data Retrieval
+
+The package now provides enhanced data access with intelligent caching and version detection:
+
+```{r data-access}
+# Get mobility data with auto-detection and caching
+mobility_data <- get_enhanced_mobility_data(
+  dates = c("2022-01-01", "2022-01-07"),
+  data_type = "od",
+  zone_level = "districts",
+  use_cache = TRUE
+)
+
+# Get data summary
+data_summary <- get_data_summary(c("2022-01-01", "2022-01-07"))
+print(data_summary$recommended_analysis)
+```
+
+### Version-Aware Analysis
+
+```{r version-info}
+# Get comprehensive version information
+version_info <- get_data_version_info()
+print(version_info$comparison)
+
+# Check current version
+current_version <- get_current_data_version()
+cat("Using data version:", current_version)
+```
+
+### Demographic Filtering (Version 2 only)
+
+```{r demographic-filtering}
+# Filter by demographics
+filtered_data <- get_enhanced_mobility_data(
+  dates = c("2022-01-01", "2022-01-07"),
+  data_type = "od",
+  zone_level = "districts",
+  demographic_filter = list(
+    age = c("25-45", "45-65"),
+    sex = c("female"),
+    income = c("10-15", ">15")
+  )
+)
+```
+
+## Advanced Time Series Analysis
+
+### Seasonal Decomposition and Trend Analysis
+
+```{r time-series}
+# Comprehensive time series analysis
+ts_analysis <- analyze_mobility_time_series(
+  mobility_data,
+  temporal_resolution = "daily",
+  seasonal_method = "stl",
+  detect_anomalies = TRUE,
+  trend_analysis = TRUE
+)
+
+# Print results
+print(ts_analysis)
+
+# Plot time series with anomalies and trends
+plot(ts_analysis)
+```
+
+### Anomaly Detection
+
+```{r anomaly-detection}
+# Access anomaly detection results
+anomalies <- ts_analysis$anomaly_detection
+cat("Number of anomalies detected:", length(anomalies$indices))
+
+# Get anomaly dates
+anomaly_dates <- anomalies$anomaly_dates
+print(head(anomaly_dates))
+```
+
+## Geospatial Analysis
+
+### Spatial Autocorrelation
+
+```{r spatial-autocorrelation}
+# Get spatial zones
+districts <- get_enhanced_spatial_zones("districts", version = 2)
+
+# Analyze spatial autocorrelation
+spatial_analysis <- analyze_spatial_patterns(
+  mobility_data,
+  districts,
+  analysis_type = "autocorrelation",
+  distance_threshold = 50000  # 50km
+)
+
+# Print results
+print(spatial_analysis)
+```
+
+### Hotspot Detection
+
+```{r hotspot-detection}
+# Detect spatial hotspots
+hotspot_analysis <- analyze_spatial_patterns(
+  mobility_data,
+  districts,
+  analysis_type = "hotspots"
+)
+
+# View hotspot summary
+print(hotspot_analysis$hotspot_summary)
+```
+
+### Accessibility Analysis
+
+```{r accessibility}
+# Analyze spatial accessibility
+accessibility_analysis <- analyze_spatial_patterns(
+  mobility_data,
+  districts,
+  analysis_type = "accessibility"
+)
+
+# Access accessibility metrics
+gravity_access <- accessibility_analysis$gravity_accessibility
+cumulative_access <- accessibility_analysis$cumulative_accessibility
+```
+
+## Interactive Dashboard Creation
+
+### Overview Dashboard
+
+```{r dashboard-overview}
+# Create comprehensive overview dashboard
+dashboard <- create_mobility_dashboard(
+  mobility_data,
+  districts,
+  dashboard_type = "overview",
+  title = "Spanish Mobility Overview - January 2022",
+  theme = "default",
+  include_filters = TRUE
+)
+
+# Save dashboard
+create_mobility_dashboard(
+  mobility_data,
+  districts,
+  dashboard_type = "overview",
+  title = "Spanish Mobility Overview",
+  save_path = "mobility_dashboard.html"
+)
+```
+
+### Temporal Dashboard
+
+```{r dashboard-temporal}
+# Create temporal analysis dashboard
+temporal_dashboard <- create_mobility_dashboard(
+  mobility_data,
+  dashboard_type = "temporal",
+  title = "Temporal Mobility Patterns",
+  theme = "light"
+)
+```
+
+### Spatial Dashboard
+
+```{r dashboard-spatial}
+# Create spatial analysis dashboard
+spatial_dashboard <- create_mobility_dashboard(
+  mobility_data,
+  districts,
+  dashboard_type = "spatial",
+  title = "Spatial Mobility Analysis",
+  theme = "default"
+)
+```
+
+## Advanced Data Validation
+
+### Comprehensive Data Validation
+
+```{r data-validation}
+# Validate Spanish mobility data
+validation_results <- validate_spanish_mobility_data(
+  mobility_data,
+  version = 2,
+  check_completeness = TRUE,
+  check_consistency = TRUE,
+  check_anomalies = TRUE
+)
+
+# View validation summary
+print(validation_results$summary)
+print(validation_results$recommendations)
+```
+
+### Quality Assessment
+
+```{r quality-assessment}
+# Check data quality
+quality_report <- assess_data_quality(
+  mobility_data,
+  version = 2,
+  spatial_zones = districts
+)
+
+# View quality metrics
+print(quality_report$metrics)
+```
+
+## Machine Learning Integration
+
+### Predictive Analytics
+
+```{r machine-learning}
+# Prepare data for machine learning
+ml_data <- prepare_ml_data(
+  mobility_data,
+  target_variable = "n_trips",
+  feature_engineering = TRUE
+)
+
+# Train prediction model
+model <- train_mobility_prediction_model(
+  ml_data,
+  model_type = "random_forest",
+  validation_split = 0.2
+)
+
+# Make predictions
+predictions <- predict_mobility_patterns(
+  model,
+  new_data = ml_data$test_data,
+  confidence_interval = TRUE
+)
+```
+
+### Anomaly Detection with ML
+
+```{r ml-anomaly-detection}
+# Detect anomalies using machine learning
+ml_anomalies <- detect_ml_anomalies(
+  mobility_data,
+  method = "isolation_forest",
+  contamination = 0.1
+)
+
+# View anomaly summary
+print(ml_anomalies$summary)
+```
+
+## Performance Optimization
+
+### Parallel Processing
+
+```{r parallel-processing}
+# Enable parallel processing for large datasets
+library(parallel)
+
+# Process multiple date ranges in parallel
+date_ranges <- list(
+  c("2022-01-01", "2022-01-07"),
+  c("2022-01-08", "2022-01-14"),
+  c("2022-01-15", "2022-01-21")
+)
+
+# Parallel data retrieval
+results <- mclapply(date_ranges, function(dates) {
+  get_enhanced_mobility_data(
+    dates = dates,
+    data_type = "od",
+    zone_level = "districts"
+  )
+}, mc.cores = 2)
+```
+
+### Caching Strategies
+
+```{r caching}
+# Check cache status
+cache_status <- check_cache_status()
+print(cache_status)
+
+# Optimize cache
+optimize_cache(
+  max_size_gb = 10,
+  cleanup_old_files = TRUE
+)
+```
+
+## Advanced Visualization
+
+### Interactive Flow Maps
+
+```{r interactive-flows}
+# Create interactive flow map
+flow_map <- create_interactive_flow_map(
+  mobility_data,
+  districts,
+  flow_threshold = 1000,
+  animation = TRUE,
+  time_column = "hour"
+)
+
+# Save interactive map
+save_interactive_map(flow_map, "flow_map.html")
+```
+
+### Enhanced Choropleth Maps
+
+```{r choropleth-maps}
+# Create enhanced choropleth map
+choropleth <- create_enhanced_choropleth_map(
+  districts,
+  value_column = "total_trips",
+  color_palette = "viridis",
+  interactive = TRUE,
+  popup_info = c("name", "total_trips", "population")
+)
+```
+
+## Integration with External Data
+
+### Joining with Census Data
+
+```{r census-integration}
+# Join with external census data
+enhanced_data <- join_with_census_data(
+  districts,
+  census_variables = c("population", "income", "age_distribution"),
+  census_year = 2021
+)
+```
+
+### Weather Data Integration
+
+```{r weather-integration}
+# Join with weather data
+weather_enhanced <- join_with_weather_data(
+  mobility_data,
+  weather_variables = c("temperature", "precipitation", "wind_speed"),
+  weather_source = "meteogalicia"
+)
+```
+
+## Best Practices and Tips
+
+### Data Size Management
+
+```{r data-management}
+# Estimate data size before download
+size_estimate <- estimate_download_size(
+  dates = c("2022-01-01", "2022-12-31"),
+  data_type = "od",
+  zone_level = "districts"
+)
+
+cat("Estimated download size:", size_estimate$total_gb, "GB")
+
+# Use data subsetting for large analyses
+subset_data <- get_enhanced_mobility_data(
+  dates = c("2022-01-01", "2022-01-07"),
+  data_type = "od",
+  zone_level = "districts",
+  aggregate_temporal = TRUE,  # Aggregate by day
+  demographic_filter = list(age = c("25-45"))  # Filter demographics
+)
+```
+
+### Error Handling
+
+```{r error-handling}
+# Robust data retrieval with error handling
+tryCatch({
+  mobility_data <- get_enhanced_mobility_data(
+    dates = c("2022-01-01", "2022-01-07"),
+    data_type = "od",
+    zone_level = "districts"
+  )
+}, error = function(e) {
+  cat("Error occurred:", e$message)
+  # Fallback to cached data
+  mobility_data <- get_cached_data(
+    dates = c("2022-01-01", "2022-01-07"),
+    data_type = "od"
+  )
+})
+```
+
+## Conclusion
+
+The `mobspain` package version 0.2.0 provides a comprehensive toolkit for advanced Spanish mobility data analysis. Key improvements include:
+
+1. **Enhanced Data Access**: Intelligent caching, version detection, and demographic filtering
+2. **Advanced Analytics**: Time series analysis, geospatial analysis, and machine learning integration
+3. **Interactive Dashboards**: Comprehensive dashboard creation with multiple themes and layouts
+4. **Data Quality**: Comprehensive validation and quality assessment tools
+5. **Performance**: Parallel processing and optimized caching strategies
+
+For more detailed examples and use cases, see the additional vignettes:
+- Time Series Analysis (`vignette("time-series", package = "mobspain")`)
+- Geospatial Analysis (`vignette("geospatial", package = "mobspain")`)
+- Dashboard Creation (`vignette("dashboards", package = "mobspain")`)
+- Machine Learning (`vignette("machine-learning", package = "mobspain")`)

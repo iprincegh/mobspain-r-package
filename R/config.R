@@ -33,7 +33,8 @@ configure_mobspain <- function(cache_dir = tempdir(), max_cache_size = 500,
     mobspain.cache_dir = cache_dir,
     mobspain.max_cache_size = max_cache_size,
     mobspain.parallel = parallel,
-    mobspain.n_cores = n_cores
+    mobspain.n_cores = n_cores,
+    mobspain.use_csv = TRUE  # Default to CSV access for reliability
   )
   
   if(parallel && !requireNamespace("parallel", quietly = TRUE)) {
@@ -45,6 +46,7 @@ configure_mobspain <- function(cache_dir = tempdir(), max_cache_size = 500,
   message("  Cache directory: ", cache_dir)
   message("  Max cache size: ", max_cache_size, " MB")
   message("  Parallel processing: ", ifelse(parallel, "enabled", "disabled"))
+  message("  Data access method: CSV (recommended for reliability)")
   if(parallel) message("  Number of cores: ", n_cores)
 }
 
